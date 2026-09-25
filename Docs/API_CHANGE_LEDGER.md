@@ -53,7 +53,11 @@ workers there. In a four-player free-for-all, two AIs lost every worker within t
 not when the body is removed. The built-in info panel shows the unit description under the context
 heading for a single selection, puts a weapon's targets and range on their own line, and names the
 attack cooldown bar in its tooltip instead of a caption. The controls hint sizes its key column to
-the text, so a short combination never wraps.
+the text, so a short combination never wraps. The description shows only when the context area has
+no production, construction, research or node progress to show; the unit name carries it as a
+tooltip. Empty progress lines, the idle progress bar and an empty rally line collapse, and the
+product icon is 64 px, so the queue slots fit the console. Every Complete starter building now has
+a description.
 
 `ARTSGameMode` overrides `InitNewPlayer` and `ChangeName`. Humans are named "Player N" unless the
 `RTSName` travel option names them; the online subsystem's nickname (often the host name) is no longer
