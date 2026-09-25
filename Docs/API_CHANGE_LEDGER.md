@@ -88,6 +88,13 @@ holds seven players instead of a crowded eight. The Content Set generator and va
 with the same rule. `RTSSkirmishLayoutRules` (private) gains the placement functions the match
 spawns resources with.
 
+A worker holding a load with no drop-off left now ends its gather or return trip at once and keeps
+its cargo, instead of standing on the order until the 12 s watchdog voided it (about two thirds of
+all voided orders in seven-player matches). `URTSWorkerDistributionLibrary::DistributeIdleWorkers`
+also sends idle workers holding a load to deliver it once a drop-off exists again; before, carriers
+were never re-tasked, so they stayed idle after their base was rebuilt. Its return value counts
+those orders too.
+
 `ARTSGameMode` overrides `InitNewPlayer` and `ChangeName`. Humans are named "Player N" unless the
 `RTSName` travel option names them; the online subsystem's nickname (often the host name) is no longer
 shown. Requested names are trimmed, stripped of control characters and limited to 20 characters.
@@ -117,11 +124,11 @@ Generated Blueprints name their components `<Thing>Component` (for example `Heal
 of `<Thing>C`; Generate renames the old components in place. Blueprints that referenced the old
 variable names by name must use the new names.
 
-Reviewed public-header fingerprint: `117328E10C8CA288BAC9C03B333CCFB0F9B330C7` (182 paths, every one now opening with the copyright notice).
+Reviewed public-header fingerprint: `6956BDF98F2005B17670DBDEC5FB9669660F59BF` (182 paths, every one now opening with the copyright notice).
 Reflection: `06D9A0572E6A5C88F81B0EF0EFAADA31C2DB6706` (2,092 records).
 Coverage: `RTS.AI.WorkerDefense.FightsBackAndResumesMining`, `RTS.AI.WorkerDefense.ChaseRadiusEndsAutomaticPursuit`, `RTS.AI.WorkerDefense.IdleWorkersDoNotStartFights`,
 `RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.UI.InfoPanelDescriptionAndDeadSelection`, `RTS.Framework.MatchState.ObservingForfeits`, `RTS.Skirmish.Factions.DifficultyTravelOption`,
-`RTS.AI.WorkerDefense.NoDraftIntoHopelessFight`, `RTS.AI.WorkerDefense.IdleSoldiersDoNotCoverAScout`, `RTS.Skirmish.Factions.ResourceFieldsStaySeparate`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
+`RTS.AI.WorkerDefense.NoDraftIntoHopelessFight`, `RTS.AI.WorkerDefense.IdleSoldiersDoNotCoverAScout`, `RTS.Skirmish.Factions.ResourceFieldsStaySeparate`, `RTS.AI.Economy.LoadHeldUntilDropOffReturns`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
 `RTS.Match.PlayerNames`, `RTS.Skirmish.Factions.SetupRemembersChosenName`,
 `RTS.UI.RelationshipPresentation`, `RTS.UI.CommandCard.HotkeysShownInMatch` and
 the migration and example-graph cases in `RTS.ContentSet.AuthoringExperience`.
