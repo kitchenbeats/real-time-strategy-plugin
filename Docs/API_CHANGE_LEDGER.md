@@ -49,6 +49,12 @@ player's known base is closer, and `FScanContext::ForeignBaseLocations` and
 the defense radius, each AI took its neighbor's own mineral line for an intrusion and sent its
 workers there. In a four-player free-for-all, two AIs lost every worker within three minutes.
 
+`URTSSelectionComponent` drops a selected actor the moment its health component reports it dead,
+not when the body is removed. The built-in info panel shows the unit description under the context
+heading for a single selection, puts a weapon's targets and range on their own line, and names the
+attack cooldown bar in its tooltip instead of a caption. The controls hint sizes its key column to
+the text, so a short combination never wraps.
+
 `ARTSGameMode` overrides `InitNewPlayer` and `ChangeName`. Humans are named "Player N" unless the
 `RTSName` travel option names them; the online subsystem's nickname (often the host name) is no longer
 shown. Requested names are trimmed, stripped of control characters and limited to 20 characters.
@@ -81,7 +87,7 @@ variable names by name must use the new names.
 Reviewed public-header fingerprint: `17F629D8ACA38A5C50D5309CB5D621569E537BD3` (182 paths, every one now opening with the copyright notice).
 Reflection: `06D9A0572E6A5C88F81B0EF0EFAADA31C2DB6706` (2,092 records).
 Coverage: `RTS.AI.WorkerDefense.FightsBackAndResumesMining`, `RTS.AI.WorkerDefense.ChaseRadiusEndsAutomaticPursuit`, `RTS.AI.WorkerDefense.IdleWorkersDoNotStartFights`,
-`RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
+`RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.UI.InfoPanelDescriptionAndDeadSelection`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
 `RTS.Match.PlayerNames`, `RTS.Skirmish.Factions.SetupRemembersChosenName`,
 `RTS.UI.RelationshipPresentation`, `RTS.UI.CommandCard.HotkeysShownInMatch` and
 the migration and example-graph cases in `RTS.ContentSet.AuthoringExperience`.
