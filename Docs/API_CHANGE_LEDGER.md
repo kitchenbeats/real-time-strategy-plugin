@@ -30,9 +30,30 @@ stays Normal, so matches started without setup behave as before. Supported oppon
 unit as "Worker Fights Back" (default off). `ARTSPawnAIController::IssueDefensiveAttackFromWork` fights
 the attacker and then resumes the interrupted gathering or return trip.
 
+`URTSAttackComponent::ChaseRadius` is now enforced. Content Sets already wrote it and the docs already
+described it, but nothing read it, so a unit that attacked on its own chased without limit: workers
+that fought back followed a fleeing scout into the enemy base and died there. A unit that attacks on
+its own (answering an attack, picking a target while idle, a worker fighting back, or an engagement
+during attack-move or patrol) now gives up a target out of weapon reach once it is farther than its
+chase radius from where the fight began. A worker goes back to its mining or return trip, an
+attack-move or patrol continues its route, and an idle unit walks back to where it was. Attacks the
+player orders are chased any distance, as before. Projects that relied on unlimited automatic chasing
+can raise **Attack Chase Radius** in the Content Set or `ChaseRadius` on the attack component.
+
+An idle worker (a pawn with a gatherer) no longer starts fights: `FindTargetInAcquisitionRadius`
+returns false for it, so it waits for work and fights only when attacked (**Worker Fights Back**) or
+when the player sends it on attack-move or patrol. The AI's base regions no longer overlap.
+`FRTSSquadSystem::IsInBaseRegion` counts a position as one of our regions only when no other
+player's known base is closer, and `FScanContext::ForeignBaseLocations` and
+`FSeenEnemy::bResourceDrain` supply those bases. Before, on maps where bases sit closer than twice
+the defense radius, each AI took its neighbor's own mineral line for an intrusion and sent its
+workers there. In a four-player free-for-all, two AIs lost every worker within three minutes.
+
 `ARTSGameMode` overrides `InitNewPlayer` and `ChangeName`. Humans are named "Player N" unless the
 `RTSName` travel option names them; the online subsystem's nickname (often the host name) is no longer
 shown. Requested names are trimmed, stripped of control characters and limited to 20 characters.
+`URTSSkirmishSetupWidget` saves only a name the player typed; the name the server assigned is used
+in the match but not saved for later sessions.
 
 HUD: `URTSHudStyle` adds `UnitBarRelationshipFrame` and `SandboxObjective`, and lowers the defaults of
 `FogUnknownOpacity` (0.92 to 0.55) and `FogKnownOpacity` (0.55 to 0.35); both are now applied to the
@@ -57,10 +78,12 @@ Generated Blueprints name their components `<Thing>Component` (for example `Heal
 of `<Thing>C`; Generate renames the old components in place. Blueprints that referenced the old
 variable names by name must use the new names.
 
-Reviewed public-header fingerprint: `3C711CCF844667C45D263C78D443E4178AEEF67C` (182 paths, every one now opening with the copyright notice).
+Reviewed public-header fingerprint: `17F629D8ACA38A5C50D5309CB5D621569E537BD3` (182 paths, every one now opening with the copyright notice).
 Reflection: `06D9A0572E6A5C88F81B0EF0EFAADA31C2DB6706` (2,092 records).
-Coverage: `RTS.AI.WorkerDefense.FightsBackAndResumesMining`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
-`RTS.Match.PlayerNames`, `RTS.UI.RelationshipPresentation`, `RTS.UI.CommandCard.HotkeysShownInMatch` and
+Coverage: `RTS.AI.WorkerDefense.FightsBackAndResumesMining`, `RTS.AI.WorkerDefense.ChaseRadiusEndsAutomaticPursuit`, `RTS.AI.WorkerDefense.IdleWorkersDoNotStartFights`,
+`RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
+`RTS.Match.PlayerNames`, `RTS.Skirmish.Factions.SetupRemembersChosenName`,
+`RTS.UI.RelationshipPresentation`, `RTS.UI.CommandCard.HotkeysShownInMatch` and
 the migration and example-graph cases in `RTS.ContentSet.AuthoringExperience`.
 
 ---
