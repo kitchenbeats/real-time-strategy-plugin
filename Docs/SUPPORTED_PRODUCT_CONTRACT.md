@@ -9,7 +9,7 @@ covers. Check it before you promise a feature or platform in your own game.
 | --- | --- |
 | Engine | Unreal Engine 5.8. Other engine versions are not supported by this release. |
 | Project types | Blueprint-only and C++ projects. |
-| Editor and target platforms | This release is tested on macOS with Apple Silicon. Windows (Win64) support is planned for a later release; until the release notes for your plugin version list Windows, treat it as untested. Intel Macs, Linux, consoles, mobile and XR are not supported. |
+| Editor and target platforms | Windows (Win64) and macOS with Apple Silicon. The plugin is tested on macOS with Apple Silicon. Epic compiles it for Windows during Fab review, but it has not yet been play-tested on Windows; please report any Windows problem on the support tracker. Intel Macs, Linux, consoles, mobile and XR are not supported. |
 | Rendering | The engine's standard desktop renderer. |
 | Input | Keyboard and mouse. Gamepad, touch, split-screen and VR are not included. |
 
