@@ -94,7 +94,7 @@ Generated Blueprints name their components `<Thing>Component` (for example `Heal
 of `<Thing>C`; Generate renames the old components in place. Blueprints that referenced the old
 variable names by name must use the new names.
 
-Reviewed public-header fingerprint: `9D2272582B4ADC599A45859803AC8212ED3D8176` (182 paths, every one now opening with the copyright notice).
+Reviewed public-header fingerprint: `117328E10C8CA288BAC9C03B333CCFB0F9B330C7` (182 paths, every one now opening with the copyright notice).
 Reflection: `06D9A0572E6A5C88F81B0EF0EFAADA31C2DB6706` (2,092 records).
 Coverage: `RTS.AI.WorkerDefense.FightsBackAndResumesMining`, `RTS.AI.WorkerDefense.ChaseRadiusEndsAutomaticPursuit`, `RTS.AI.WorkerDefense.IdleWorkersDoNotStartFights`,
 `RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.UI.InfoPanelDescriptionAndDeadSelection`, `RTS.Framework.MatchState.ObservingForfeits`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
