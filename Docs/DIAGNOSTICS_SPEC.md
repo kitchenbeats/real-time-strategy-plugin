@@ -30,6 +30,9 @@ CI (exit codes). This document defines their shared runtime contract.
    `Saved/Diagnostics/matchcheck_<UTC-milliseconds>_<run-id>_<role>_<pid>.json`, logs a
    `[MatchCheck]` verdict block,
    and exits the process with code 0 (pass) / 1 (alarms). A match becomes a test.
+   On a map that waits for its setup screen, add `-ExecCmds=rts.skirmish.start`; choose the
+   opponents with the map's travel options, for example `?NumBases=4?AIDifficulty=Easy`
+   (see STARTER_RULESET.md).
    Packaged automation can pass `-RTSMatchCheckOutput=<directory>` to select an explicit writable
    verdict directory; relative paths resolve from the project directory and the destination must be
    writable under the platform's application sandbox. For a sandbox-signed packaged macOS app,

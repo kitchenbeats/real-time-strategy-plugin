@@ -43,6 +43,12 @@ of 6000 cm. **Open Arena** is a flat map with bases in a circle and allows up to
 limited by the map size. The same limit applies to the setup screen, server travel options, lobby
 requests and rematches; a request that does not fit fails before the map is set up.
 
+Matches started without the setup screen (the `rts.skirmish.start` console command, a dedicated
+server, an automated check) read these travel options on the map URL: `?NumBases=` (players,
+human and AI), `?StartingWorkers=`, `?MinHumanPlayers=`, and `?AIDifficulty=Passive`, `Easy` or
+`Normal` (default `Normal`). For example
+`L_RTSComplete_Starter?AIDifficulty=Easy`.
+
 The island is made of engine cube meshes with a map-owned copy of the plugin's placeholder material,
 plus a volume that removes the same area from the navigation mesh. For your own terrain, work in
 your own copy of the map instead of editing generated actors, which Generate replaces.

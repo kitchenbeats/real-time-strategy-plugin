@@ -65,6 +65,12 @@ it could no longer act in, and a free-for-all never ended. Defeat still turns a 
 observer, now through `ARTSPlayerState::SetObserver`. The melee elimination log line appears only
 when the elimination happens.
 
+AI worker defense drafts workers only into a fight the region can win: when the intruders' combined
+strength exceeds that of the local military and draftable workers that can hit them, no workers are
+drafted and drafted ones return to mining. A lone raider or a worker rush is still answered. The
+skirmish game mode reads a new `?AIDifficulty=Passive|Easy|Normal` travel option for matches started
+without the setup screen.
+
 `ARTSGameMode` overrides `InitNewPlayer` and `ChangeName`. Humans are named "Player N" unless the
 `RTSName` travel option names them; the online subsystem's nickname (often the host name) is no longer
 shown. Requested names are trimmed, stripped of control characters and limited to 20 characters.
@@ -97,7 +103,8 @@ variable names by name must use the new names.
 Reviewed public-header fingerprint: `117328E10C8CA288BAC9C03B333CCFB0F9B330C7` (182 paths, every one now opening with the copyright notice).
 Reflection: `06D9A0572E6A5C88F81B0EF0EFAADA31C2DB6706` (2,092 records).
 Coverage: `RTS.AI.WorkerDefense.FightsBackAndResumesMining`, `RTS.AI.WorkerDefense.ChaseRadiusEndsAutomaticPursuit`, `RTS.AI.WorkerDefense.IdleWorkersDoNotStartFights`,
-`RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.UI.InfoPanelDescriptionAndDeadSelection`, `RTS.Framework.MatchState.ObservingForfeits`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
+`RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.UI.InfoPanelDescriptionAndDeadSelection`, `RTS.Framework.MatchState.ObservingForfeits`, `RTS.Skirmish.Factions.DifficultyTravelOption`,
+`RTS.AI.WorkerDefense.NoDraftIntoHopelessFight`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
 `RTS.Match.PlayerNames`, `RTS.Skirmish.Factions.SetupRemembersChosenName`,
 `RTS.UI.RelationshipPresentation`, `RTS.UI.CommandCard.HotkeysShownInMatch` and
 the migration and example-graph cases in `RTS.ContentSet.AuthoringExperience`.
