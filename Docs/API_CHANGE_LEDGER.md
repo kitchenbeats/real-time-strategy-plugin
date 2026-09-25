@@ -12,6 +12,20 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Movement benchmark
+
+**Date:** 2026-09-25 · **Stage:** pre-release
+
+New private `URTSNavigationBenchmarkSubsystem` runs scripted movement scenarios when the game starts
+with `-RTSNavBench=<scenario>` and writes a JSON report (see DIAGNOSTICS_SPEC.md). It is never
+created without the flag and adds no public header or Blueprint function; its class is the one new
+reflection record. Customers need to do nothing.
+
+Reviewed public-header fingerprint: `6956BDF98F2005B17670DBDEC5FB9669660F59BF` (unchanged).
+Reflection: `9DB050282DA3C51E5C76E5144AA8196D324955E0` (2,093 records).
+Coverage: the benchmark's own scenario runs, recorded as the movement baseline in the project's
+movement design notes.
+
 ## First-match experience and hosted HUD presentation
 
 **Date:** 2026-09-24 · **Stage:** pre-release

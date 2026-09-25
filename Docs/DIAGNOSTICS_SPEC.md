@@ -107,6 +107,57 @@ CI (exit codes). This document defines their shared runtime contract.
      casualty could have been saved. Unarmed worker deaths remain in telemetry without arming it.
    - `StuckStorm` — no-progress order voids past threshold/min
 
+## Movement benchmark
+
+`-RTSNavBench=<scenario>` runs one scripted movement scenario on the Complete starter map
+(`/RealTimeStrategy/Starter/Complete/Generated/Maps/L_RTSComplete_Starter`) without starting the
+skirmish, measures it, writes `Saved/Diagnostics/navbench_<scenario>_<UTC>.json` and exits. Units
+belong to the local player and are ordered through the player's own order path, so a group move
+gets the same formation a mouse click does. Scenarios run in the open lane at Y = -3500 and build
+their own walls and buildings:
+
+| Scenario | What it does |
+|---|---|
+| `open` | 50 Riflemen cross 8,500 cm of open ground. |
+| `choke` | 50 Riflemen pass a wall across the map through one gap (`-RTSNavBenchGap=<cm>`, default 300). |
+| `mixed_choke` | 10 Vanguards and 30 Riflemen pass the same wall together (gap at least 400). |
+| `crossing` | Two groups of 25 swap places head-on. |
+| `building_path` | Three Barracks appear across the lane 4 s after 50 Riflemen set off. |
+| `building_on_units` | A Barracks appears on 12 idle Riflemen; 2.5 s later they are ordered away. |
+| `closed` | 20 Riflemen are ordered into a sealed enclosure. |
+| `attack` | 30 Riflemen attack an enemy Headquarters 5,500 cm away that cannot be destroyed; a unit arrives once the Headquarters is within its weapon range. |
+| `scale` | 300 Riflemen (or `-RTSNavBenchUnits=<n>`) cross 8,000 cm. |
+
+Other options: `-RTSNavBenchUnits=<n>` overrides a scenario's unit count,
+`-RTSNavBenchOutput=<directory>` the report folder, `-RTSNavBenchContent=<folder>` the Content Set
+the units and buildings load from, and `-RTSNavBenchKeepAlive` keeps the process running. For a
+rendered run, `-RTSNavBenchView` centres the camera on the scenario and `-RTSNavBenchShots=<seconds>`
+saves a screenshot at that interval (from the renderer, so the window does not need focus).
+
+The report (`"schema": "navbench/1"`) holds, for the ordered units:
+
+- `arrived`, `gave_up` (the order ended away from the goal), `still_moving` (at the time limit).
+- `arrival_seconds` and `arrival_vs_straight_line` (time over straight-line distance at full
+  speed), each as count/p50/p95/max. A unit arrives within max(100 cm, 2 radii) of the goal it was
+  given, or when its order ends within 300 cm of it.
+- `stall_unit_seconds` (seconds a unit with an unfinished order moved under 5 cm per 0.25 s sample,
+  after a 1 s grace), `longest_still_seconds`, `permanent_stalls` (still stalled for 5 s at the end)
+  and `order_voids` (no-progress order voids during the run).
+- `heading_reversals_per_moving_unit_minute`: direction changes over 120 degrees while moving.
+- Body overlap, counted every frame: `peak_touching_pairs`/`touching_pair_seconds` (centres closer
+  than the sum of radii) and `peak_stacked_pairs`/`stacked_pair_seconds` (closer than half of it),
+  plus `final_overlapping_pairs`/`final_stacked_pairs` at the end. Units that walk through each
+  other still arrive fast, so these are the numbers that show it.
+- `worst_clump_ratio` and `clumps`: each arrived group's radius over the radius of the densest disc
+  the same units could form.
+- For `attack`, `arrival_vs_straight_line` measures against the distance to the target's footprint
+  less the weapon range.
+- `units_inside_footprint` (`building_on_units`): units still inside the building 2.5 s after it
+  appeared.
+- `frame_wall_ms` (p50/p95/max) with the benchmark's own work subtracted, and `unit_radii`.
+
+The process exits 0 when the scenario ran and 1 when it could not be set up (`setup_failure`).
+
 ## Shared conventions
 - All thresholds `UPROPERTY(Config)` — rebalance via DefaultGame.ini, never code.
 - Event `type` names are `Category.Event` PascalCase; add new ones freely, never rename existing.
