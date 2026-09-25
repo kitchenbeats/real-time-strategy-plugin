@@ -59,6 +59,12 @@ tooltip. Empty progress lines, the idle progress bar and an empty rally line col
 product icon is 64 px, so the queue slots fit the console. Every Complete starter building now has
 a description.
 
+`ARTSPlayerController::SetObserver(true)` on a player still in the match now surrenders for them
+first, so the match ends when one participant remains. Before, the player kept a place in the match
+it could no longer act in, and a free-for-all never ended. Defeat still turns a losing human into an
+observer, now through `ARTSPlayerState::SetObserver`. The melee elimination log line appears only
+when the elimination happens.
+
 `ARTSGameMode` overrides `InitNewPlayer` and `ChangeName`. Humans are named "Player N" unless the
 `RTSName` travel option names them; the online subsystem's nickname (often the host name) is no longer
 shown. Requested names are trimmed, stripped of control characters and limited to 20 characters.
@@ -88,10 +94,10 @@ Generated Blueprints name their components `<Thing>Component` (for example `Heal
 of `<Thing>C`; Generate renames the old components in place. Blueprints that referenced the old
 variable names by name must use the new names.
 
-Reviewed public-header fingerprint: `17F629D8ACA38A5C50D5309CB5D621569E537BD3` (182 paths, every one now opening with the copyright notice).
+Reviewed public-header fingerprint: `9D2272582B4ADC599A45859803AC8212ED3D8176` (182 paths, every one now opening with the copyright notice).
 Reflection: `06D9A0572E6A5C88F81B0EF0EFAADA31C2DB6706` (2,092 records).
 Coverage: `RTS.AI.WorkerDefense.FightsBackAndResumesMining`, `RTS.AI.WorkerDefense.ChaseRadiusEndsAutomaticPursuit`, `RTS.AI.WorkerDefense.IdleWorkersDoNotStartFights`,
-`RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.UI.InfoPanelDescriptionAndDeadSelection`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
+`RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.UI.InfoPanelDescriptionAndDeadSelection`, `RTS.Framework.MatchState.ObservingForfeits`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
 `RTS.Match.PlayerNames`, `RTS.Skirmish.Factions.SetupRemembersChosenName`,
 `RTS.UI.RelationshipPresentation`, `RTS.UI.CommandCard.HotkeysShownInMatch` and
 the migration and example-graph cases in `RTS.ContentSet.AuthoringExperience`.
