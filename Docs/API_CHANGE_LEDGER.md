@@ -71,6 +71,14 @@ drafted and drafted ones return to mining. A lone raider or a worker rush is sti
 skirmish game mode reads a new `?AIDifficulty=Passive|Easy|Normal` travel option for matches started
 without the setup screen.
 
+Only soldiers in a base-defense squad, and stationary weapons in reach, now count as covering an
+intruder; idle soldiers at home left a harassing scout to kill workers unanswered. A near-even fight
+(intruders up to 25% stronger) is still answered. The AI's base locations come from resource nodes
+grouped with a link distance scaled to the map's node spacing, instead of a fixed 15 m chain that
+merged an eight-player map into one location at its center. MatchCheck's EconomyLiveness no longer
+alarms while a player without a finished drop-off building is building one, or cannot afford one.
+New `AI.Decision` events: `declineWorkerDraft` and `attackTarget`.
+
 `ARTSGameMode` overrides `InitNewPlayer` and `ChangeName`. Humans are named "Player N" unless the
 `RTSName` travel option names them; the online subsystem's nickname (often the host name) is no longer
 shown. Requested names are trimmed, stripped of control characters and limited to 20 characters.
@@ -104,7 +112,7 @@ Reviewed public-header fingerprint: `117328E10C8CA288BAC9C03B333CCFB0F9B330C7` (
 Reflection: `06D9A0572E6A5C88F81B0EF0EFAADA31C2DB6706` (2,092 records).
 Coverage: `RTS.AI.WorkerDefense.FightsBackAndResumesMining`, `RTS.AI.WorkerDefense.ChaseRadiusEndsAutomaticPursuit`, `RTS.AI.WorkerDefense.IdleWorkersDoNotStartFights`,
 `RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.UI.InfoPanelDescriptionAndDeadSelection`, `RTS.Framework.MatchState.ObservingForfeits`, `RTS.Skirmish.Factions.DifficultyTravelOption`,
-`RTS.AI.WorkerDefense.NoDraftIntoHopelessFight`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
+`RTS.AI.WorkerDefense.NoDraftIntoHopelessFight`, `RTS.AI.WorkerDefense.IdleSoldiersDoNotCoverAScout`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
 `RTS.Match.PlayerNames`, `RTS.Skirmish.Factions.SetupRemembersChosenName`,
 `RTS.UI.RelationshipPresentation`, `RTS.UI.CommandCard.HotkeysShownInMatch` and
 the migration and example-graph cases in `RTS.ContentSet.AuthoringExperience`.

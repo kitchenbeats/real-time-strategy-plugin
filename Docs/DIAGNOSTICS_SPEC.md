@@ -15,7 +15,7 @@ CI (exit codes). This document defines their shared runtime contract.
    - `Combat.Engagement` {phase: start|end, location, attackers, defenders, armyValueDelta}
    - `Combat.Kill` {victimClass, killerClass, victimPlayer, atHomeBase: bool}
    - `AI.BuildOrder` {phase: queued|started|completed, class, reason}
-   - `AI.Decision` {kind: attackLatch|retreat|expand|draftWorkers, detail (e.g. strengthRatio)}
+   - `AI.Decision` {kind: attackLatch|retreat|expand|draftWorkers|declineWorkerDraft|attackTarget, detail}
    - `AI.SquadState` {squad, from, to}
    - `Move.Stall` {unit, order, secondsStill} · `Move.Voided` {unit, order}
 3. **Dev HUD overlay** (`rts.diag.hud 1`): per-player scoreboard, squad states, income
