@@ -1,15 +1,15 @@
-# C++ Runtime Extension Contract
+# C++ Extension Rules
 
-This is the shared contract for project-owned C++ that extends the Real-Time Strategy plugin. It
-applies to native subclasses, Blueprint overrides implemented on native classes, delegate
-subscribers, subsystem integrations, and asynchronous work. Feature guides add narrower rules but
-do not relax this contract.
+These rules apply to any C++ in your project that extends the Real-Time Strategy plugin: native
+subclasses, Blueprint overrides implemented on native classes, delegate subscribers, subsystem
+integrations and asynchronous work. Feature guides add narrower rules but never relax these. For an
+introduction, start with [Extending with C++](EXTENSION_GUIDE.md).
 
 ## Thread model
 
 Plugin gameplay APIs, UObject callbacks, Blueprint events, component delegates, and replication
 notifications run on Unreal's game thread unless an API explicitly documents another thread. The
-plugin does not expose a worker-thread gameplay mutation seam.
+plugin offers no way to change gameplay from a worker thread.
 
 - Read or mutate Actors, Components, UObjects, Worlds, subsystems, replicated containers, and
   delegates only on the game thread.
@@ -59,9 +59,16 @@ cancellation result.
 The server owns gameplay truth. `BlueprintAuthorityOnly` and editor node filtering communicate
 intent; they are not a security boundary. Native extensions must enforce authority themselves.
 
-- A client sends intent through a supported request on its owning `ARTSPlayerController`. Never
-  trust a client-provided owner, team, price, range result, visibility result, target relationship,
-  winner, or arbitrary Actor reference.
+- A client sends intent through a supported request owned by its `ARTSPlayerController`: use a
+  high-level controller `Issue...` facade or, for a generic selected-unit `FRTSOrderData`, call
+  `GetOrderSubmission()->IssueOrderToSelectedActors()`. The replicated native submission component
+  is request transport; do not add a second instance or call authority-only gameplay transactions
+  directly. Never trust a client-provided owner, team, price, range result, visibility result,
+  target relationship, winner, or arbitrary Actor reference.
+- For orders, the controller retains the high-level command facades, targeting flow,
+  `IsOrderClassAllowedFromClient` policy, and public event surface. Its submission component owns
+  generic selected-unit collection, structural validation, bounded admission, and packet-safe
+  batching/RPC transport; the authority-side order implementation still revalidates gameplay.
 - Validate cheap request shape and rate limits first. On authority, resolve authoritative objects
   and revalidate ownership, team, fog visibility, target legality, resources, technology, capacity,
   range, cooldown, match state, and liveness immediately before mutation.
@@ -69,9 +76,11 @@ intent; they are not a security boundary. Native extensions must enforce authori
   research, containment, ownership transfer, elimination, and match completion. Direct field or
   replicated-container edits bypass ordering, rollback, notifications, and security checks.
 - A Boolean returned by a direct authority-side transaction reports that immediate authoritative
-  commit. A client-side `ARTSPlayerController::Issue...` result reports **Request Accepted**, not
-  eventual completion; observe replicated state and feature completion/failure delegates. In both
-  cases, propagate `false` instead of broadcasting success or applying durable presentation.
+  commit. Request boundaries are different: `ARTSPlayerController::Issue...` and
+  `URTSOrderSubmissionComponent::IssueOrderToSelectedActors()` report **Request Accepted** or
+  **Request Submitted**, not eventual completion. Observe replicated state and feature
+  completion/failure delegates. In every case, propagate `false` instead of broadcasting success
+  or applying durable presentation.
 - Delegates and Blueprint events report committed state. Do not use a notification callback as
   authorization, and avoid recursively starting the same transaction from its completion delegate.
 
@@ -108,7 +117,7 @@ current replicated state rather than assuming notification order.
 
 - Implement a `BlueprintNativeEvent` in C++ through its `_Implementation` method.
 - Call the parent implementation for additive policy. Skip it only where the feature guide names
-  the event as a complete replacement seam and the subclass assumes every documented invariant.
+  the event as a complete replacement and the subclass keeps every rule that guide documents.
 - Query and policy callbacks return decisions; they do not mutate gameplay, emit success, or launch
   asynchronous work unless their feature contract explicitly says otherwise.
 - Transaction overrides preserve the documented validation, payment, cooldown, refund, replication,
@@ -122,14 +131,16 @@ current replicated state rather than assuming notification order.
 Before shipping a project-owned extension, verify that it:
 
 1. Compiles in Editor, Development, and Shipping without unity or shared-PCH assumptions.
-2. Mutates gameplay only on authority and routes client intent through the owning controller.
+2. Mutates gameplay only on authority and routes client intent through the owning controller's
+   high-level facade or its native order-submission request component.
 3. Revalidates every security and transaction precondition immediately before commit.
 4. Uses supported transaction APIs and treats their return value as truth.
 5. Holds UObject state through reflected strong references or deliberate weak references.
 6. Unbinds external delegates and clears timers/tasks/registrations during teardown.
 7. Touches UObjects and Blueprint only on the game thread; async work consumes copied values.
 8. Handles destroyed actors, world teardown, travel, late replication, and missing presentation.
-9. Preserves the parent contract for every override and documents intentional replacement seams.
+9. Keeps the parent behavior for every override, and documents any override that deliberately
+   replaces it.
 10. Passes the Content Set validator, relevant automation, and a packaged multiplayer run.
 
 See `NETWORK_SECURITY.md` for hostile-client boundaries and fog-of-war replication,

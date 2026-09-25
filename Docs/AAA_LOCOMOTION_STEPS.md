@@ -1,4 +1,4 @@
-# Production Locomotion Polish
+# Locomotion Polish
 
 Start with the supported `DirectAnimSet` mode described in `MULTIRIG_ANIM.md`. Once the chosen mesh,
 skeleton, and clips work together, switch the unit definition to `CustomAnimBlueprint` for a
@@ -19,7 +19,7 @@ project-specific high-fidelity locomotion stack.
 ## Rig independence
 
 Do not hard-code Manny, Mixamo, Meshy, or project-specific bone names in shared RTS gameplay code.
-Keep bone mappings, IK definitions, retargeting, and Control Rig classes in customer-owned animation
+Keep bone mappings, IK definitions, retargeting, and Control Rig classes in your own animation
 assets. `URTSAnimComponent` intentionally publishes semantic gameplay state rather than a skeleton
 contract.
 

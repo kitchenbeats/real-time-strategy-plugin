@@ -1,4 +1,4 @@
-# Player Advantage Extension Contract
+# Player Advantages
 
 `RTSPlayerAdvantageComponent` is the replicated authority for per-player handicaps and controlled
 test advantages. The bundled player controller includes it, so Blueprint-only projects can set god

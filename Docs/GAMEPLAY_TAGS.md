@@ -1,4 +1,4 @@
-# Gameplay Tag Extension Contract
+# Gameplay Tags
 
 `RTSGameplayTagsComponent` is the replicated source of truth for runtime actor tags used by orders,
 requirements, construction, harvesting, combat, abilities, and UI. Author default tags on the

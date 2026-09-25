@@ -1,4 +1,4 @@
-# Ownership and Team Extension Contract
+# Ownership and Teams
 
 `RTSOwnerComponent` stores gameplay ownership as replicated `RTSPlayerState`, not as a controller
 reference. Player state remains network-relevant when a remote controller is not, making it the

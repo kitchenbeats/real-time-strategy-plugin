@@ -1,34 +1,40 @@
 # Real-Time Strategy Plugin for Unreal Engine 5.8
 
-A complete gameplay framework for building real-time strategy games in Unreal Engine 5.8 —
-economy, construction, production, orders, combat, fog of war, minimap, multiplayer replication,
-and a full Blueprint and C++ extension surface. Install it into a fresh project, generate a
-playable RTS starter, reskin it with your own characters (including the UE 5.8 Manny), and ship.
+A framework for making real-time strategy games in Unreal Engine 5.8, in the style of StarCraft and
+Brood War, together with a complete starter game you install into your project and make your own.
+It works in Blueprint-only and C++ projects and needs no other content.
 
-## Getting started
+This repository holds the plugin's documentation and its support tracker. The same guides ship
+inside the plugin under `Docs/`, and **RTS > Guide** in the editor opens them.
 
-Start with the [Install and First Play guide](Docs/INSTALL_QUICKSTART.md). The full documentation
-set is in [Docs/](Docs/):
+## Start here
 
-- [Install and First Play](Docs/INSTALL_QUICKSTART.md)
-- [Troubleshooting](Docs/TROUBLESHOOTING.md)
-- [Blueprint API Contract](Docs/BLUEPRINT_API_CONTRACT.md)
-- [C++ API Surface](Docs/CPP_API_SURFACE.md) and [C++ Extension Contract](Docs/CPP_EXTENSION_CONTRACT.md)
-- [Extension Guide](Docs/EXTENSION_GUIDE.md)
-- [Vendor-Neutral Skeletal Animation](Docs/MULTIRIG_ANIM.md)
-- [Packaging](Docs/PACKAGING.md)
-- [Supported Product Contract](Docs/SUPPORTED_PRODUCT_CONTRACT.md)
+1. Enable **Real-Time Strategy** in **Edit > Plugins** and restart the editor.
+2. Choose **RTS > Install the Starter Game**. This copies a complete game into
+   `/Game/RTSStarterGame`, builds it and opens its map. Press **Play**, then **Start match**.
+3. Choose **RTS > Customize My Game** to open your game's **Content Set**. Change units, buildings,
+   costs and art there, then choose **Generate Game** and **Play**.
+
+The full walkthrough is in [Getting Started](Docs/INSTALL_QUICKSTART.md), and
+[the documentation index](Docs/README.md) lists every guide in the order you will need them:
+
+1. Install and play the starter game
+2. Make it your game with the Content Set
+3. Add Blueprint logic with Custom Blueprints
+4. Extend with C++
+5. Ship it: packaging and multiplayer
 
 ## Support
 
 Open an issue on this repository's [issue tracker](../../issues). Please include your engine
 version, platform, plugin version (see `RealTimeStrategy.uplugin`), and the relevant log excerpt.
+[Troubleshooting](Docs/TROUBLESHOOTING.md) covers the most common first-hour problems.
 
 ## Licensing
 
-The plugin is a commercial product distributed under the store's standard license terms.
-This repository contains documentation only; it does not grant any license to the plugin
-itself. The plugin incorporates MIT-licensed work; see `THIRD_PARTY_NOTICES.md` inside the
-plugin package for attributions.
+The plugin is a commercial product distributed under the store's standard license terms. This
+repository contains documentation only; it does not grant any license to the plugin itself. The
+plugin incorporates MIT-licensed work; see `THIRD_PARTY_NOTICES.md` inside the plugin for
+attributions.
 
-Copyright © 2026 J. Hanlon.
+Copyright © 2026 Jeremy Hanlon.

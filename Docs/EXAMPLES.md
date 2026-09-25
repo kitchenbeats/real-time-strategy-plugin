@@ -1,4 +1,4 @@
-# Small Blueprint and C++ Examples
+# Blueprint and C++ Examples
 
 The examples are supported, focused extension recipes. They are deliberately separate from the
 complete starter so a customer can learn one policy without reverse-engineering a whole match.
@@ -35,7 +35,7 @@ The Blueprint classes are executable assets, not screenshots: automation loads e
 its intended native parent and generated class, and rejects compiler warnings. The release gate then
 repeats those tests from an isolated installed plugin.
 
-## C++ contract
+## Using the C++ examples
 
 Include the relevant public header and add `RealTimeStrategyExamples` to the project's module
 dependencies. The example module is runtime-safe and compiled for Editor, Development, and Shipping.
@@ -50,25 +50,24 @@ follows the game-thread, lifetime, delegate, async, and transaction rules in
 The resource, node, worker, and depot are intentionally wired to one another in native class
 defaults. In an RTS Content Set, add:
 
-- resource id `ExampleCrystal` with **Existing Resource Class** set to
-  the native `RTSExampleCrystalResource` class;
-- source id `ExampleCrystalNode`, resource id `ExampleCrystal`, and **Existing Source Actor Class**
-  set to `BP_ExampleCrystalNode`;
-- unit id `ExampleBuilder`, **Existing Unit Actor Class** set to `BP_ExampleBuilderUnit`, one gather
-  entry for `ExampleCrystal`, **Can Build** enabled, and constructible id `ExampleFieldDepot`;
-- building id `ExampleFieldDepot`, **Existing Building Actor Class** set to
-  `BP_ExampleFieldDepot`, and accepted resource id `ExampleCrystal`.
+- a resource with Id `ExampleCrystal` and **Replace With Class** set to the native
+  `RTSExampleCrystalResource` class;
+- a resource source with Id `ExampleCrystalNode`, **Resource** `ExampleCrystal`, and
+  **Replace With Class** set to `BP_ExampleCrystalNode`;
+- a unit with Id `ExampleBuilder`, **Replace With Class** set to `BP_ExampleBuilderUnit`, one
+  **Gathers** entry for `ExampleCrystal`, **Can Build** turned on, and `ExampleFieldDepot` in its
+  **Can Build** list;
+- a building with Id `ExampleFieldDepot`, **Replace With Class** set to `BP_ExampleFieldDepot`, and
+  `ExampleCrystal` in **Accepts Resources**.
 
-The Content Set fields own stable ids and scenario membership; the existing classes remain
-authoritative for components, costs, gather/build catalogs, footprint, visual, and presentation.
-Validation fails if the declared capabilities and class composition diverge. Duplicate the node,
+The Content Set keeps the Ids and where each entry appears in the match; the example classes
+decide components, costs, what is gathered and built, footprint and visuals. **Check for Problems**
+reports an error when the Content Set's settings and a class's components disagree. Duplicate the node,
 worker, and depot Blueprints into `/Game` before reskinning them, then point the Content Set at the
 project copies.
 Resource classes are transaction identities, not interchangeable presentation skins. If a project
 instead derives its own resource class from `BP_ExampleCrystalResource`, it must select that exact
 class consistently in the node source, worker gather policy, depot drain, and every related cost.
 
-The supported examples now cover all advertised extension categories: resource/source composition,
-unit composition, building composition, orders, abilities, strategic AI, objective conditions, and
-HUD injection. Broader rig/vendor workflow validation and manual Blueprint usability review remain
-separate production-readiness gates.
+Together the examples cover every kind of extension: resources and resource nodes, units,
+buildings, orders, abilities, AI strategy, win conditions and HUD panels.

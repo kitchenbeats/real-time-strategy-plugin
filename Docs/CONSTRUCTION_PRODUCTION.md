@@ -1,4 +1,4 @@
-# Construction and Production Extension Contract
+# Construction and Production
 
 The default construction and production components provide server-authoritative building
 placement, builder assignment, immediate or over-time costs, parallel production queues, supply

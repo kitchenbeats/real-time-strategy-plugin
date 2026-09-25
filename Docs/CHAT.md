@@ -1,4 +1,4 @@
-# In-match chat (turnkey, Blueprint-only)
+# Chat
 
 The plugin ships a complete, replicated player-chat system. **No C++ required to use or skin it.**
 

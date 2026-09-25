@@ -1,4 +1,4 @@
-# Combat Networking and Extension Contract
+# Combat and Networking
 
 Combat state is server-authoritative. Health, shields, energy, ability cooldowns, attack-cooldown
 deadlines, stance, upgrades, and kills replicate to clients; clients use the replicated values for
@@ -60,8 +60,13 @@ component behind.
 
 ## Player-issued actions
 
-Do not call an authority-only gameplay component directly from a client widget. Use the owning
-`RTSPlayerController` request nodes:
+Do not call an authority-only gameplay component directly from a client widget. Selected-unit orders
+go through the replicated, client-owned `URTSOrderSubmissionComponent` returned by
+`ARTSPlayerController::GetOrderSubmission()`:
+
+- `Issue Order to Selected Actors`
+
+Other player actions continue through the owning `RTSPlayerController` request nodes:
 
 - `Issue Ability Order`
 - `Issue Research Order`
@@ -88,13 +93,14 @@ rejects replayed IDs, missing/out-of-order/oversized chunks, duplicates, foreign
 malformed data, and autonomously clears stale state against an undilated wall clock. It executes
 nothing until the complete set passes validation. A normal 1,000-unit
 command therefore uses 32 packet-safe chunks and 32 work units. Every strategic server request shares
-the budget, keeping repeated or abandoned transactions bounded. The controller exposes rate-admitted
-and rate-rejected work-unit counters for security, network, and soak evidence; admission happens
-before live gameplay validation and is not reported as successful gameplay. Replayed begin requests
-fail the network validator closed. Defense-in-depth rejection paths never reflect a reliable
-completion unless at least one response work unit was admitted; a rate-denied begin grants no
-"prepaid" allowance to chunks already present in the reliable stream, so those chunks must pass the
-budget individually. Remote owning clients
+the `URTSOrderSubmissionComponent` budget, including retained ability, stance, research,
+construction, production, container, and surrender RPCs on the controller. The component exposes
+rate-admitted and rate-rejected work-unit counters for security, network, and soak evidence;
+admission happens before live gameplay validation and is not reported as successful gameplay.
+Replayed begin requests fail the network validator closed. Defense-in-depth rejection paths never
+reflect a reliable completion unless at least one response work unit was admitted; a rate-denied
+begin grants no "prepaid" allowance to chunks already present in the reliable stream, so those chunks
+must pass the budget individually. Remote owning clients
 receive `OnSubmittedOrderBatch` immediately for predicted UI, while `OnIssuedOrder` is reserved for
 actual authority issuance. A reliable authority completion releases client flow control, which caps
 large outstanding group-order transactions at one (at most 33 reliable RPCs) rather than allowing
@@ -102,16 +108,22 @@ rapid 1,000-unit commands to approach Unreal's 512-bunch reliable-channel ceilin
 fewer units do not occupy that transaction slot. After a bounded wall-clock deadline, the owning
 client surfaces a missing-acknowledgement error once but deliberately retains the slot: reliable RPCs
 cannot be cancelled, so only the server acknowledgement or connection/controller teardown may
-release it without permitting stalled-channel backlog growth. Controller subclasses may tune
-sustained and burst defaults, but hard ceilings remain enforced in code.
+release it without permitting stalled-channel backlog growth. Projects may tune the inherited order
+component's sustained and burst defaults, but hard ceilings remain enforced in code.
 
-These batching, replay, and rate-budget contracts are covered by validator, adversarial-budget, and
-authoritative generated-RPC-dispatch automation. That automation does not emulate a modified remote
-client or prove Unreal's transport queues under packet loss and saturation. Unreal reliable transport
-is connection-bounded, but the application token bucket runs only after an RPC is delivered and
-deserialized. Packaged hostile-client, reliable-channel saturation, and overflow qualification
-therefore remains open and must pass on every supported platform and advertised network topology
-before the plugin makes an abuse-resistance or saturation claim.
+These batching, replay, and rate-budget contracts are covered by validator and adversarial-budget
+automation plus a real in-process, two-world listen-server PIE proof. That proof sends an actual
+32-reference pawn-array RPC from the owning client's replicated order component, using repeated
+references to one already-mapped pawn rather than 32 distinct object exports. It admits a transaction
+on the authority component, expires it through the remote controller's independent component tick,
+and receives the reliable completion on the client component to release the exact flow-control slot.
+It verifies bidirectional component RPC routing and leaves both owning connections open.
+
+The PIE proof does not emulate a modified remote client or prove Unreal's transport queues under
+packet loss and saturation. Unreal reliable transport is connection-bounded, but the application
+token bucket runs only after an RPC is delivered and deserialized. The plugin has not yet been
+tested against modified clients flooding a packaged server, so it makes no claim about resisting
+that kind of abuse. Test your packaged game on each platform and network setup you ship.
 
 Container contents are server-authoritative. `GetOccupancy` replicates to every relevant client,
 while the full `GetContainedActors` identity list replicates only to the container's owning

@@ -5,9 +5,9 @@ RTS pawn controllers use a Blueprint-selectable hybrid policy. The production de
 navigation path for every pawn. `Military Only` is an experimental opt-in: it preserves stock
 navigation for gatherers/builders while military pawns may use the shared field route. `All Pawns`
 is also experimental because the sampled grid does not yet model every runtime obstacle or retain
-projected navmesh XY. Neither flow replacement policy may be presented as release-ready until it
-passes the movement and scale gates in `PERFORMANCE_SOAK.md`, including dynamic buildings,
-duplicate destinations, representative formations, and blocked routes.
+projected navmesh XY. Treat both flow replacement policies as experimental: if you use one, test it
+in your own maps with buildings placed during play, many units sent to the same place, mixed unit
+sizes and blocked routes.
 
 Generated starter maps use `URTSNavigationSystem` with `ARTSRecastNavMesh`. The Recast class owns a
 `DynamicModifiersOnly` runtime-generation default: static floor geometry remains editor-baked while

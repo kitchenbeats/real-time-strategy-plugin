@@ -1,4 +1,4 @@
-# Vision and fog of war
+# Vision and Fog of War
 
 The plugin ships a complete grid-based vision stack: team visibility, remembered terrain, frozen
 last-seen building ghosts, observer reveal, a post-process fog renderer, and optional terrain-height

@@ -1,26 +1,61 @@
 # Vendor-Neutral Skeletal Animation
 
-The runtime animation contract is skeleton-specific but vendor-neutral. The plugin does not ship
-an Anim Blueprint tied to StarMaps, Manny, Mixamo, Meshy, or another project's `/Game` content.
+Animation data is tied to a skeleton but not to any character vendor. The plugin does not ship an
+Anim Blueprint tied to Manny, Mixamo, Meshy, or any project's `/Game` content.
 
 ## Guided editor workflow
 
-For a generated unit, select one `RTS Content Set` in the Content Browser, right-click, and choose
-**RTS Authoring > Apply Imported Unit Presentation...**. The modal asset pickers provide an
-Unreal-native, no-Python workflow:
+For a generated unit, right-click your Content Set in the Content Browser and choose
+**Use My Model for a Unit...** (in the **RTS Game** section). The **Apply Imported Unit Presentation**
+window opens:
 
 1. Choose the unit id.
-2. Assign exactly one customer-owned skeletal or static mesh.
-3. For a skeletal mesh, assign an `RTSAnimSet` and choose Direct Anim Set or Custom Animation
-   Blueprint. Custom mode also requires an Anim Blueprint compiled for the selected skeleton.
-4. Optionally assign a portrait, then apply.
-5. Run **Validate Content Set**, followed by **Generate Playable RTS Content**.
+2. Assign exactly one skeletal or static mesh from your project.
+3. For a skeletal mesh, click **Create Anim Set from My Clips...**. Map Idle and Walk, then any
+   optional actions you have. The pickers filter for the selected skeleton. Set the walk/run clips'
+   intended travel speeds in centimeters per second, then **Save New Anim Set...** in your project.
+   The saved set is selected automatically. You can also select an existing `RTSAnimSet`.
+4. Choose **Direct Anim Set (No Anim Blueprint)** for automatic playback, or **Custom Animation
+   Blueprint** for your own graph. Custom mode requires a compatible compiled graph with an
+   evaluated `DefaultSlot` node for action montages.
+5. Optionally assign a portrait, then **Apply Presentation**.
+6. Choose **Check for Problems**, then **Generate Game**, then **Play**.
+
+Import and save the mesh and animation sequences in your project's Content Browser before opening
+the mapper. Preview the clips on that mesh in Unreal first. An empty clip picker usually means the
+clips belong to a different skeleton; the mapper does not import or retarget them. Walk/Run Clip
+Speed describes the speed the original animation was authored for, not the unit's gameplay movement
+speed. Start Running At selects the gait threshold. After applying, issue a move, gather, build,
+and attack command in the generated map to check the mappings from the actual gameplay camera.
 
 The apply operation is undoable and atomic. It rejects missing assets, mixed static/skeletal input,
 animation clips from another skeleton, incompatible Anim Blueprints, and units backed by a complete
 existing actor class. Customer assets are referenced in place and are never copied or modified.
 Editor Utility Blueprints can use **Apply Imported Unit Presentation** for the same validated
 transaction.
+
+The clip mapper creates a new Anim Set asset in your project and leaves the imported mesh and clips
+unchanged. It refuses to overwrite an existing asset. Edit a saved Anim Set directly to change a
+mapping, add variants, or configure contextual deaths. If clips use another skeleton, retarget them
+in Unreal before selecting them here.
+
+### Which events play the mapped clips?
+
+| Mapping | Trigger |
+| --- | --- |
+| Idle / Walk / Run | Actual movement state and speed. Run falls back to Walk when no Run clip is assigned in direct mode. |
+| Attack | An attack commits damage or launches a projectile. |
+| Gather | The worker harvests a resource. |
+| Build | The worker contributes to construction. |
+| Death | The unit dies; direct playback holds the final pose. |
+| Hit React | Eligible damage reactions, subject to action priority and reaction cooldown. |
+| Heal / Ability 1 / Ability 2 | Your Blueprint requests the corresponding action through **RTS Anim Component > Play Action**. |
+
+Use standard animation Sound or Niagara notifies for cosmetic cues at particular frames. An attack
+clip's notifies do not control damage timing: combat commits the hit or projectile before requesting
+the animation. For custom presentation logic, bind `OnActionRequested`; combat also exposes
+`OnAttackUsed`. Keep gameplay effects in the authoritative ability/combat logic so animation culling
+cannot prevent an attack or change its result.
 
 Studios can call **Validate Imported Unit Presentation** first when building a batch importer or
 custom Editor Utility Blueprint. This read-only node accepts the same mesh, Anim Set, animation
@@ -65,6 +100,14 @@ The customer graph can use state machines, Blend Spaces, motion matching, Contro
 inertialization, linked layers, and montages while RTS gameplay remains unchanged. Action clips are
 played through the configured montage slot when appropriate.
 
+Read `GetCurrentAction` for automatic Gather/Build loops; `OnActionRequested` handles one-shot
+requests and does not announce those labor transitions. A mapped action already plays through the
+component's slot montage, so an event handler should not start another copy. The custom graph can
+also consume actions without mapped clips. The editor import path still requires a compatible Walk
+clip; completely clipless sets are available through runtime configuration. Follow the
+[Animation Blueprint wiring guide](ANIMBP_MANUAL_STEPS.md#build-a-custom-animation-blueprint) for
+the owner reference, state variables, slot connection, and custom ability calls.
+
 ## Runtime and code extension
 
 Class-default setup remains editable in Blueprint Details. Live changes use validated transactions:
@@ -94,9 +137,10 @@ movesets, and custom action systems do not need reflection or direct property mu
 ## Generated unit fit and gameplay authority
 
 `Unit Size` is the authoritative gameplay envelope. Its radius and height generate the exact Pawn
-capsule; the visual component does not own collision. Skeletal and static meshes with valid bounds
-are uniformly scaled to fit its authored diameter and height, then translated so the imported bounds
-center sits on the capsule origin. Aspect ratio is preserved, so reskinning does not distort the character. Empty,
+capsule; the visual component does not own collision. Skeletal meshes with valid bounds are
+uniformly scaled to the authored height, so outstretched bind-pose arms do not shrink the character.
+Static meshes are uniformly fitted inside the authored diameter and height. Both are translated so
+their imported bounds center sits on the capsule origin. Aspect ratio is preserved. Empty,
 non-finite, or degenerate mesh bounds fail validation, as does a height smaller than the capsule's
 diameter; generation never silently enlarges the authored gameplay shape.
 
@@ -112,8 +156,8 @@ before release.
 Persistent imported meshes are also validated at every rendered LOD. Static and skeletal LODs must
 contain sections, every section must resolve an effective material, and skeletal `LODMaterialMap`
 entries must resolve to valid mesh material slots. A deliberately low-detail single-LOD asset is
-valid; triangle and LOD-count budgets belong to project performance qualification, not compatibility
-validation. Engine-generated transient meshes used by automation are excluded from this persistent
+valid; triangle and LOD-count budgets are a performance decision for your project, not part of this
+compatibility check. Engine-generated transient meshes used by automation are excluded from this persistent
 asset contract.
 
 Regeneration is safe across reskins. Switching static to skeletal presentation removes the
@@ -122,15 +166,14 @@ animation component and clears the native skeletal mesh. A customer component wi
 name but the wrong type is reported as a conflict instead of being deleted. Each successful generation
 reapplies the authored capsule and refreshes `CharacterMovement` navigation-agent dimensions.
 
-## What “rig qualified” means
+## Checking a character before you ship it
 
-Vendor names are not compatibility rules. A rig family is qualified only for the exact
-customer-owned fixture, import settings, target skeleton, engine/platform, and animation mode that
-were exercised. Passing the read-only validator proves structural compatibility; it does not prove
-retarget pose quality, foot plants, skin weighting, cloth, facial deformation, IK, or camera
-readability.
+A vendor name is not a compatibility guarantee. A character is proven only for the exact asset,
+import settings, skeleton, engine version, platform and animation mode you tested. Passing
+**Check for Problems** proves the setup is structurally valid; it does not prove retarget pose
+quality, foot contact, skin weighting, cloth, facial animation, IK or readability from the RTS camera.
 
-For each licensed fixture a release candidate should retain this evidence outside the plugin:
+For each character you ship, keep this record in your own project:
 
 1. Source/vendor asset identity, license owner, import settings, target skeleton, and retargeter
    revision.
@@ -141,9 +184,6 @@ For each licensed fixture a release candidate should retain this evidence outsid
 5. Regeneration proof after swapping away from and back to the fixture, with no stale generated
    visual components.
 
-The bundled vendor-neutral greybox baseline and engine-owned structural fixtures are automated.
-The optional UE 5.8 Third Person presentation has its own clean-project acceptance path. No Mixamo,
-Meshy, marketplace, or arbitrary studio rig is claimed as commercially qualified until a
-customer-licensed fixture completes all five items above on the named release platform. The
-repository References corpus contains architecture and gameplay references, not redistributable rig
-fixtures, so it cannot substitute for that evidence.
+The plugin's own tests cover its placeholder art and engine-owned test meshes, and Unreal's Manny
+from the UE 5.8 Third Person template. The plugin makes no compatibility claim for any particular
+Mixamo, Meshy, marketplace or studio character; check each one with the steps above.

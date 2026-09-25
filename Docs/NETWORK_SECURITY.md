@@ -1,4 +1,4 @@
-# Multiplayer Vision Security
+# Network Security
 
 The plugin ships with connection-aware actor replication for projects using `ARTSGameMode` and
 Unreal's legacy networking stack. It is enabled by default. A replicated actor that carries a
@@ -38,6 +38,8 @@ same per-connection relevance policy.
 `ARTSGameMode` installs `URTSReplicationGraph` when its server NetDriver has no replication driver.
 The `bAutoInstallSecureReplicationGraph` class default is enabled, so Blueprint-only projects get
 the secure policy automatically by deriving their game mode from `ARTSGameMode`.
+Setup runs during game initialization and again before BeginPlay callbacks, covering editor listen
+servers whose network driver is created between those lifecycle points. The check is idempotent.
 
 If a project supplies a custom Replication Graph, set
 `bAutoInstallSecureReplicationGraph` to false and implement an equivalent per-connection filter for
@@ -76,9 +78,9 @@ false failures and unsafe client-side repair attempts.
 
 ## Release verification
 
-The replication policy is implemented and focused-contract-tested, but the packaged dedicated
-privacy/hostile-client matrix remains open. The checks below are required before describing hidden
-state as commercially qualified.
+The replication policy is implemented and covered by focused automated tests, but it has not yet
+been tested against modified clients on a packaged dedicated server. Run the checks below on your
+own packaged game before you promise players that hidden information is protected.
 
 Test the packaged game with a dedicated server and at least two independent clients. Verify that:
 
@@ -106,6 +108,14 @@ token bucket, and routes only through each recipient controller's server-side
 are the only default senders. Override `CanSendPlayerPing` or `CanReceivePlayerPing` in a controller
 Blueprint/C++ class for alliances or custom caster rules without moving trust to the client.
 
+Selected-unit submission and its RPCs live on `URTSOrderSubmissionComponent`, the replicated native
+default subobject returned by `ARTSPlayerController::GetOrderSubmission()`. Player controllers exist
+on the server and their owning client, so this stable client-owned component identity makes its
+client-to-server order RPCs and server-to-client completion RPC routable without exposing them to
+other clients. The component reads local selection from `URTSSelectionComponent`; the controller
+retains viewport-input state, Blueprint event publication, order-class policy, and the final
+gameplay execution hooks.
+
 Order requests require an owned pawn, a finite target location, and a server-approved order class.
 The default `ARTSPlayerController` policy accepts its `DefaultOrders` plus explicit construction and
 stop commands. When adding a custom client-issued order in Blueprint, override
@@ -122,13 +132,25 @@ Reliable rejection completions are also admission-gated: an inbound request that
 response work unit is dropped without reflecting traffic back onto the reliable channel. Chunks from
 a rate-denied begin are not treated as prepaid and must pass the shared budget individually.
 
+`URTSOrderSubmissionComponent` also owns the shared strategic-request token bucket and its admitted
+and rejected work-unit counters. Selected orders consume it directly; retained controller RPCs for
+ability, stance, research, construction, production, container, and surrender requests consume that
+same per-player budget. Moving order transport to the component therefore does not create a second
+admission pool.
+
+Source automation covers validators and adversarial budget cases plus a real in-process, two-world
+listen-server PIE round trip. The owning client's replicated order component sends an actual
+32-reference pawn-array RPC and a transaction begin to the authority component; the array repeats one
+already-mapped pawn rather than exporting 32 distinct objects. The remote controller's component
+independently expires the transaction, sends the reliable completion back, releases the exact client
+flow-control slot, and leaves both connections open. This proves bidirectional component-RPC routing
+for that 32-reference payload shape.
+
 These controls bound application state, gameplay work, and server-generated responses for admitted
 requests. They do not claim that an application token bucket can prevent a modified client from
-putting reliable RPCs into Unreal's connection-level transport before dispatch. Source automation
-uses the generated authoritative RPC thunk plus adversarial validator/budget cases; it is not a
-packaged hostile-client saturation test. Packet-loss delivery, queued-bunch growth, connection
-closure, and reliable-buffer behavior remain mandatory packaged qualification under `SEC-003` and
-`SEC-004`.
+putting reliable RPCs into Unreal's connection-level transport before dispatch. The Play in Editor test
+is not a packaged test against a hostile client. Packet loss, queue growth, connection closure and
+reliable-buffer limits still need testing in your packaged game.
 
 Begin-construction requests additionally resolve the builder's indexed class allowlist and execute
 its authoritative `CanConstructBuildingAt` policy during order admission. The builder repeats that

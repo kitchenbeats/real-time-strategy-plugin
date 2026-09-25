@@ -1,185 +1,145 @@
-# Starter Ruleset and Reskin Workflow
+# Starter Game and Generated Content
 
-The supported customer workflow is Unreal-native. It does not require StarMaps content, Python
-scripts, or a particular character vendor.
+This is the reference for the included starter game, what **Generate Game** creates, and how to
+generate from the command line. For everyday editing, start with [The Content Set](CONTENT_SET_GUIDE.md).
+Nothing here needs Python scripts, content from another project, or a particular character vendor.
 
-## Clean-project contract
+## The installed starter game
 
-A blank Unreal 5.8 project can enable the plugin and choose **Add > Gameplay > RTS > RTS Content
-Set** in the Content Browser. No generic Data Asset class picker or setup utility is required.
-Every newly created Content Set starts with a valid greybox economy/combat ruleset: minerals, a
-gatherable mineral field, a worker, a rifleman, a town hall, a barracks, and a supply depot. It can
-immediately generate component-complete RTS Blueprints. Greybox units, buildings, and resource
-sources use plugin-owned materials plus Engine basic shapes, so assigned art is optional.
+**RTS > Install the Starter Game** (also in **Tools > Real-Time Strategy**) copies the plugin's
+starter Content Set into `/Game/RTSStarterGame`, generates your project's own copy of the game, and
+opens its map. In a fresh project it also sets the game and editor startup maps; startup maps you
+already chose are kept.
 
-## Version identity
+The starter game has one playable faction, **Expedition**, with eight units and eight buildings. It
+covers minerals and gas, workers, construction, supply, research, infantry, armor, aircraft, siege,
+healing and defense towers. Its art uses only engine basic shapes and plugin placeholder materials.
 
-Every newly saved `URTSContentSet` writes the plugin's dedicated Unreal custom-version GUID and the
-current customer-visible `SchemaVersion`. The editor generator has an independent monotonically
-increasing generator version. An asset loaded from before this contract is marked schema/custom
-version 0; it is never silently relabeled as current merely because the plugin can deserialize it.
-This identity is the input to the migration workflow. Until the migration gates in the commercial
-release tracker pass, version detection alone is not evidence that updating production assets is safe.
+Your Content Set at `/Game/RTSStarterGame/DA_RTSStarter` is the editable source of your game.
+Running **Install the Starter Game** again keeps it and its rules; it does not overwrite your
+settings from the plugin's copy. To install another copy in a different folder, call the
+**Install the Starter Game** node (`RTS|Authoring|Onboarding`) from an Editor Utility Blueprint and
+pass a different `/Game` folder.
 
-Schema versions describe authored Content Set data. Generator versions describe the layout and
-meaning of generated base assets. They change independently so an implementation-only generator
-update does not pretend the customer's source asset schema changed, and a schema migration can
-report exactly whether regeneration is also required.
+The plugin also contains a smaller sample, `/RealTimeStrategy/Starter/Reference`, used as a minimal
+example and for automated tests. A Content Set you create with **+ Add > Gameplay > RTS Content Set**
+starts with a similar small ruleset.
 
-## Generated ownership and extension boundary
+## Twin Crossings and player count
 
-Generation creates `DA_RTSGenerationManifest_<ContentSetId>` beside the category folders. It
-records the source Content Set path/id, schema and generator versions, a unique completed-run id,
-and the exact path, stable id, and semantic role of every generator-owned base asset. Regeneration
-updates an existing output only when that manifest proves the exact ownership tuple. A compatible
-Blueprint at the expected path is not presumed safe to overwrite; missing or mismatched provenance
-fails before generation changes any assets.
+The starter game's map, **Twin Crossings**, is for two players: one human against the AI, or two
+humans against each other. Extra network connections join as spectators. They do not take a player
+slot and do not become players on a rematch.
 
-Treat the manifest and every asset it lists as generated base implementation. Put customer-owned
-logic and presentation in child Blueprints or composed classes outside the generated output root,
-then reference those complete classes through `ExistingUnitActorClass`,
-`ExistingBuildingActorClass`, or the equivalent resource/source fields. The generator registers
-those referenced classes but never rewrites them. Do not add customer graphs, components, variables,
-or defaults directly to a manifest-owned base: regeneration intentionally owns that complete asset.
-See `CONTENT_SET_MIGRATION.md` for the dry-run fields, anomaly classifications, and blocking rules.
+Twin Crossings is a symmetric 120 by 120 meter map with a main base on each side and expansion
+resource lines to the north and south. A low central island splits the ground into two wide routes.
+The island blocks ground units and gives no height or cover bonus; aircraft fly over it normally.
+Each main base has eight mineral fields and one gas geyser; each expansion has six mineral fields
+and one gas geyser.
 
-The generated gameplay layer includes ownership, selection, visibility, health, vision, movement,
-AI defaults, attacks, gathering, construction, production, costs, supply, UI components, collision,
-navigation footprints, and gameplay tags as requested by the definitions.
+**Match Setup > Arena Preset** in the Content Set chooses **Twin Crossings** or **Open Arena**.
+Twin Crossings needs **Num Players** 2, **Maximum Participants** 2 and a **Playable Half Extent**
+of 6000 cm. **Open Arena** is a flat map with bases in a circle and allows up to sixteen players,
+limited by the map size. The same limit applies to the setup screen, server travel options, lobby
+requests and rematches; a request that does not fit fails before the map is set up.
 
-All framework gameplay tags are registered natively by the runtime module. Customers do not need
-to copy a GameplayTags config section or reference the plugin's historical tag-table asset for
-orders, gathering, construction, relationships, and status requirements to work.
+The island is made of engine cube meshes with a map-owned copy of the plugin's placeholder material,
+plus a volume that removes the same area from the navigation mesh. For your own terrain, work in
+your own copy of the map instead of editing generated actors, which Generate replaces.
 
-By default, generation also creates a runnable starter scenario in the Content Set's `MapsPath`:
+The map also stores a small terrain picture for the minimap, showing only the ground (no units or
+resources). Live minimap markers still respect fog of war. A background brush set on your own
+minimap widget replaces this picture.
 
-- `DA_Skirmish_<ContentSetId>` wires the generated town hall, worker, resource source, starting
-  resources, human-controlled bases, AI fill, and workers. `MinimumHumanPlayersToStart` can hold
-  startup until the intended number of humans has joined. Disable
-  `StarterScenario.bHumanControlsFirstBase` for an AI-vs-AI observer showcase instead.
-- `BP_GM_<ContentSetId>_Starter` exposes a Blueprint extension point while supplying the complete
-  skirmish runtime.
-- `L_<ContentSetId>_Starter` uses that GameMode and contains a collision floor, built Recast
-  navigation, matching minimap and vision bounds, a configured fog-of-war controller and unbound
-  post-process renderer, an RTS player start, and basic lighting.
-- `ARTSHUD` creates the plugin-owned full-screen RTS console for each local player. Its native
-  widget tree includes the resource and match strips, control groups, info panel, command card,
-  caster bar, notifications, match banner, and the bundled minimap—no project UI Blueprint is
-  required.
+## What Generate creates
 
-Open that map and press Play to exercise the generated ruleset. Disable `StarterScenario.bGenerate`
-for a definitions-only Content Set, or change its IDs and layout settings before generation to pick
-different generated building, worker, and resource-source classes.
+Generate writes into the Content Set's output folders (**Advanced > Generated Content Root** and
+**Output Paths**):
 
-The commercial automation suite also opens the bundled reference in PIE and completes a real economy
-vertical slice through public gameplay APIs: match startup, participant/team creation, generated actor
-counts, worker selection, gather-order routing, navigation, extraction, and deposit into the player's
-resource wallet. This runtime test is repeated against the isolated installed package during release.
+- `BP_<Id>` for every unit and building, `BP_Res_<Id>` for every resource and `BP_Src_<Id>` for
+  every resource source. Each Blueprint contains the RTS components its Content Set entry needs:
+  ownership, selection, visibility, health, vision, movement, AI, attacks, gathering, construction,
+  production, costs, supply, health and progress bars, collision, navigation footprint and gameplay
+  tags.
+- `DA_Skirmish_<ContentSetId>`, the match settings: starting buildings, workers, resources, human
+  and AI players. **Minimum Human Players to Start** can hold the match until enough humans join;
+  turn off **Human Controls First Base** for an AI-only match you watch.
+- `BP_GM_<ContentSetId>_Starter`, the game mode.
+- `L_<ContentSetId>_Starter`, the map: a floor with collision, a built navigation mesh, minimap and
+  vision bounds, fog of war, a player start and lighting.
+- `DA_RTSGenerationManifest_<ContentSetId>`, the record of every asset Generate owns.
 
-## Bundled playable reference
+`ARTSHUD` creates the full in-game HUD for each player (resources, match clock, control groups,
+selection panel, command card, notifications, minimap) without any project UI Blueprint.
 
-Customers do not have to generate anything to confirm the plugin is installed correctly. Enable
-**Show Plugin Content**, open
-`/RealTimeStrategy/Starter/Reference/Generated/Maps/L_RTSStarter_Starter`, and press Play. This
-plugin-owned map is a complete two-base skirmish with built navigation, a flat collision floor,
-resources, workers, production buildings, combat units, fog of war, the default HUD, and the native
-AI runtime.
+Turn off **Match Setup > Generate Map** to generate only the unit, building and resource Blueprints.
 
-`/RealTimeStrategy/Starter/Reference/DA_RTSStarter` is the reproducible source Content Set for the
-reference. Its generated assets are intentionally grouped beneath
-`/RealTimeStrategy/Starter/Reference/Generated/{Resources,Units,Buildings,Maps}` so the supported
-example is visually separate from framework assets and from customer-owned `/Game` content.
+The gameplay tags the plugin uses are registered by the plugin itself; you do not need to copy any
+gameplay tag configuration into your project.
 
-The bundled actors use redistributable, vendor-neutral greybox presentation. This is the guaranteed
-blank-project baseline, not a skeleton limitation: assign or retarget Manny, Mixamo, Meshy,
-marketplace, or custom studio assets through the reskin contract below. The plugin never requires or
-hard-references optional project/vendor content.
+### Generate owns its output
 
-## Fastest Blueprint-only character reskin: UE 5.8 Manny
+Generate updates an asset only when its manifest proves Generate created it. If an asset exists
+where Generate wants to write but the manifest does not list it, Generate stops and reports it
+instead of overwriting it. Before changing anything, Generate checks every output path, compiles
+every generated Blueprint without errors or warnings, checks that files are writable (asking source
+control to check out read-only files), and only then saves. If saving fails part-way, it restores the
+previous versions of the files it changed. See [Content Set Migration](CONTENT_SET_MIGRATION.md) for
+the full list of conditions it reports.
 
-Use this path when the project was created from UE 5.8's Third Person template or has the matching
-**Characters** feature pack. Manny remains customer/Epic-owned project content; the plugin discovers
-it in `/Game` and never redistributes or hard-references it from plugin content.
+Do not add graphs, components, variables or default values to generated assets. Put Blueprint logic
+in a **Custom Blueprint**, or supply a complete class of your own through **Replace With Class**. See
+[The Content Set](CONTENT_SET_GUIDE.md#add-blueprint-logic-to-a-unit-or-building).
 
-1. Create an **RTS Content Set** and keep its starter worker plus at least one unit whose Role is
-   `Combat`.
-2. Select the Content Set in the Content Browser, right-click it, and choose **RTS Authoring > Apply
-   UE 5.8 Manny Presentation**.
-3. Review the **RTS Authoring** Message Log. The action validates the exact UE 5.8 mesh, Animation
-   Blueprint, locomotion, labor, attack, and death assets before changing the Content Set. If the
-   required content is absent, add the UE 5.8 Characters feature pack and run the action again.
-4. The action creates or updates customer-owned worker and combat `RTSAnimSet` assets under
-   `<ContentSetFolder>/Presentation/Manny`, assigns Manny and the compatible custom Animation
-   Blueprint to those unit definitions, saves the animation sets, and marks the Content Set dirty.
-5. Choose **Validate Content Set**, then **Generate Playable RTS Content**, open the generated
-   `L_<ContentSetId>_Starter` map, and press Play.
+## Version numbers
 
-The operation is undoable and repeatable. It refuses package/type conflicts and keeps presentation
-assets outside the generator-owned output tree, so later regeneration does not overwrite them. Use
-**Apply Imported Unit Presentation...** instead for Mixamo, Meshy, marketplace, or studio-owned
-meshes; that vendor-neutral path is documented in `Docs/MULTIRIG_ANIM.md`.
+Every Content Set records a format version (**Advanced > Schema Version**). Generate has its own
+version, recorded in the manifest. They change independently: a new generator version rebuilds
+generated assets without touching your Content Set's data, while a new format version needs an
+explicit upgrade of the Content Set. See [Content Set Migration](CONTENT_SET_MIGRATION.md).
 
-## Blueprint workflow
+## The plugin's sample map
 
-1. In the Content Browser, choose **Add > Gameplay > RTS > RTS Content Set**.
-2. Use the included starter definitions, edit them, or press `Reset to Starter Ruleset` to restore
-   the supported baseline.
-3. Add resources, resource sources, units, and buildings in the Details panel as needed.
-4. Leave `VisualMode` on `UseGreyboxPrimitive` for an immediately playable prototype, or assign
-   project art and choose `UseAssignedArt`.
-5. Right-click the Content Set in the Content Browser and choose **Validate Content Set**, then
-   **Generate Playable RTS Content**. **Apply Safe Authoring Fixes** repairs deterministic issues
-   in one undoable transaction and reports any design decisions that still need attention.
-6. Open `L_<ContentSetId>_Starter` and press Play. Reskin generated units by changing their
-   presentation fields on the Content Set and regenerating. For game-specific Blueprint behavior,
-   either keep a customer-owned child of the generated base outside the generated output root and
-   select it from a customer-owned roster/map/configuration seam, or supply a complete stable
-   project-owned class through the Content Set's `Existing*Class` field. An `Existing*Class` must
-   not depend on the generated class it suppresses. Never edit a manifest-owned generated base.
+To check the plugin works without installing anything, choose **RTS > Open the Plugin's Sample Map**
+and press Play. It opens `/RealTimeStrategy/Starter/Complete/Generated/Maps/L_RTSComplete_Starter`,
+the plugin's own copy of the starter game. The smaller sample is
+`/RealTimeStrategy/Starter/Reference/Generated/Maps/L_RTSStarter_Starter`, with its Content Set at
+`/RealTimeStrategy/Starter/Reference/DA_RTSStarter`. Turn on **Show Plugin Content** in the Content
+Browser settings to see them. These are read-only plugin assets; edit your installed copy instead.
 
-Every authoring structure is `BlueprintType`, its customer fields are `BlueprintReadWrite`, and the
-editor library reports guided validation findings instead of silently generating broken assets.
-All three native Content Browser actions support multi-selection and publish detailed results to
-the **RTS Authoring** Message Log. Editor Utility Blueprints can call the same
-`RTSContentSetEditorLibrary` functions when a studio wants a custom tool surface.
+## Unreal's Manny
 
-Commercial release candidates use the timed, unassisted human study in
-`UI_AUTHORING_QUALIFICATION.md`. Automated generation proves correctness but never substitutes for
-that discoverability and ergonomics evidence.
+In a project made from the UE 5.8 Third Person template, or with its Characters content added, you
+can give the starter units Unreal's Manny character. Manny stays your project's content; the plugin
+finds it in `/Game` and does not include it.
 
-Before changing any output, generation preloads and preflights every expected resource, source,
-unit, building, starter definition, GameMode, and map path. An incompatible existing asset fails the
-operation with its exact path and type before partial output is created. Generated Blueprints must
-compile without errors or warnings before the deferred package save begins. When saving is enabled,
-the generator also validates every final filename, attempts source-control checkout for read-only
-existing outputs, and proves every destination directory with a real temporary write before mutating
-assets. Packages are then saved in deterministic path order. This protects normal validation,
-collision, compiler, permission, checkout, and directory failures; it is not a claim of
-filesystem-atomic rollback if the operating system or source-control provider fails unexpectedly
-partway through Unreal's sequential multi-package save.
+1. Right-click your Content Set and choose **Use Unreal's Manny for Units**.
+2. Read the result in the **RTS Authoring** page of the Message Log. The command checks for the
+   exact UE 5.8 mesh, Animation Blueprint and clips before it changes anything. If they are missing,
+   add the Third Person template content and run it again.
+3. The command creates Anim Sets for the worker and the main combat unit under
+   `<Content Set folder>/Presentation/Manny`, assigns Manny and its Animation Blueprint to those
+   units, and marks the Content Set as changed.
+4. Choose **Generate Game**, then **Play**.
 
-Generated package names and category folders are deterministic. Automation saves a real Content Set
-and rejects missing, stray, misnamed, or redirector outputs. Generated project assets may depend on
-customer-selected `/Game` presentation assets—that is how reskinning works—but the bundled plugin is
-separately required to have no `/Game` dependency. The saved automation fixture also proves that
-generated cross-package dependencies remain inside its selected output root; custom art outside
-that root is allowed only when the Content Set explicitly selects it.
+You can undo the command, and run it again safely. For other characters use
+**Use My Model for a Unit...**; see [Vendor-Neutral Skeletal Animation](MULTIRIG_ANIM.md).
+
+## HUD skin
+
+The plugin uses its own HUD style, `DA_RTSHudStyle_Default`, without any project setting. To use
+your own, create an **RTS HUD Style** asset and select it under
+**Project Settings > Game > RTS HUD Style**, or set a style override on your own child of `ARTSHUD`.
 
 Blueprint UI authors can derive from `ARTSHUD` and `URTSConsoleWidget`, replace the console or
-minimap classes in Class Defaults, replace individual console panel classes, and use the
-`Console Widget Created` event for game-specific bindings. Set `Auto Create Console Widget` off
-only when a project supplies a wholly custom root HUD.
+minimap widget classes in Class Defaults, replace individual panels, and use the
+**Console Widget Created** event for their own bindings. Turn off **Auto Create Console Widget**
+only when your project supplies its own complete HUD. See [UI Data API](UI_DATA_API.md).
 
-The plugin selects its bundled `DA_RTSHudStyle_Default` skin without requiring a project config
-entry. A project can replace it under **Project Settings > Game > RTS HUD Style**, or set a
-per-GameMode style override on its `ARTSHUD` subclass. If an authored style is deliberately unset,
-the native style defaults remain a complete asset-free safety net.
+## Command line and C++ workflow
 
-## C++ and command-line workflow
-
-Code projects use the same `URTSContentSet`, `FRTSUnitDefinition`,
-`FRTSBuildingDefinition`, validator, and generator backend. Headless validation and generation are
-available for CI:
+The same Content Set, validation and generation are available from the command line, for build
+machines:
 
 ```text
 UnrealEditor-Cmd Project.uproject -run=RTSValidateContentSet -ContentSet=/Game/MyRTS/DA_MyRules
@@ -191,126 +151,77 @@ UnrealEditor-Cmd Project.uproject -run=RTSGenerateContentSet -CreateStarter=/Gam
 UnrealEditor-Cmd Project.uproject -run=RTSGenerateContentSet -CreateStarter=/Game/MyRTS/DA_MannyRules -OutputRoot=/Game/MyRTS/Generated -Presentation=Manny -Observer
 ```
 
-`-CreateStarter` creates and saves a complete starter Content Set before running the same
-production generator used by the editor actions. Without `-OutputRoot`, generated categories are
-placed in a `Generated` folder beside the new Content Set. Creation refuses to replace an existing
-asset. Pass `-Force` only when the asset is already an `RTSContentSet` and CI intentionally needs to
-reset it to the supported starter ruleset and regenerate its known output assets. Assets of another
-class are never overwritten, invalid mounted paths fail before generation, and every failure returns
-a nonzero process status.
+- `RTSValidateContentSet` accepts `-Fix` (apply the same fixes as **Fix Simple Problems**) and
+  `-SaveFixes` (save them).
+- `-CreateStarter` creates and saves a new starter Content Set, then generates it. Without
+  `-OutputRoot`, the generated folders go into a `Generated` folder beside the new Content Set. It
+  refuses to replace an existing asset. `-Force` resets an existing Content Set to the starter rules
+  and regenerates it; assets of any other type are never overwritten.
+- `-OutputRoot` moves only the generated folders of an existing Content Set; its Id stays the same.
+- `-ApplyUpgrade` upgrades an older Content Set before generating; add `-UpgradeOnly` to upgrade
+  without generating.
+- `-Presentation=Manny` applies Unreal's Manny from the Third Person template, as described above.
+- `-Observer` makes the generated map an AI-only match to watch. `-MinHumanPlayers=N` makes the
+  match wait for N human players (at most the number of bases; must be 0 with `-Observer`).
+  Connected humans take the first free bases, AI takes the rest, and later arrivals watch.
 
-For an existing Content Set, `-OutputRoot` relocates only its generated category paths and preserves
-its stable Content Set id. This supports project-owned migration and CI staging without writing into
-the source plugin. Normal provenance and ownership checks still apply, so relocation cannot silently
-claim or overwrite unowned assets.
+Every failure returns a non-zero exit code. Generation never changes your project's startup map; to
+package a generated map as your game's first map, select it under
+**Project Settings > Maps & Modes > Game Default Map**.
 
-`-Presentation=Manny` discovers the supported assets from an installed UE 5.8 Third Person template
-and authors project-owned worker/soldier Blueprints plus customer-owned animation sets under
-`<ContentSetFolder>/Presentation/Manny`; `-OutputRoot` affects only generated output, and the plugin
-retains no `/Game` dependency. It assigns the template's compatible Manny Animation Blueprint so
-the feature pack's root-motion-tagged clips are evaluated without surrendering authoritative RTS
-navigation. `-Observer` makes the generated starter map an autonomous AI-versus-AI
-showcase. `-MinHumanPlayers=N` sets the multiplayer startup gate and must not exceed the starter's
-base count; observer scenarios require zero. Connected humans are assigned deterministically to the
-first available bases, remaining bases use AI, excess and post-start joins become observers. To
-package that map as the application entry point, explicitly select its generated
-`L_<ContentSet>_Starter` map under **Project Settings > Maps & Modes > Game Default Map** before
-cooking. Generation deliberately does not rewrite project-wide startup configuration.
+C++ code uses the same types: `URTSContentSet`, `FRTSUnitDefinition`, `FRTSBuildingDefinition`, and
+the editor functions in `URTSContentSetEditorLibrary` (from an editor module). The runtime systems are
+ordinary exported classes and components, so a C++ project can derive its own controllers, orders, AI,
+components and widgets without using generated Blueprints.
 
-For an automated packaged human-side acceptance run, generate the Manny profile without
-`-Observer`, select the generated map as `GameDefaultMap`, and launch the packaged executable with:
+### Complete classes of your own
 
-```text
--RTSMatchCheck=900 -RTSMatchCheckRepeats=2 -RTSMatchCheckSpeed=16 -RTSHumanCheck -RTSTransactionCheck
-```
+A unit's or building's **Replace With Class** takes a complete class you made: a Character Blueprint
+or `ACharacter` subclass for a unit, a Pawn Blueprint or `APawn` subclass for a building. Generate then
+uses that exact class for training, construction, starting bases and the match settings, and no longer
+creates `BP_<Id>` for that entry.
 
-The structured
-verdict requires ownership, camera movement through the bundled Enhanced Input action, HUD and
-team vision, selection, gathering, resource return, match completion, and reset in each match.
+Your class is in charge of its components, mesh, weapons, what it gathers or builds, its costs and
+what it trains. The Content Set entry keeps its Id, faction, role and match setup references.
+**Check for Problems** checks that the class has every RTS component the entry's settings need and
+reports each one that is missing. Builders and training buildings must already list the classes they
+build or train; Generate never changes your class. Clear **Replace With Class** to go back to a
+generated Blueprint.
 
-Runtime systems remain ordinary exported Unreal classes and components, so a code-only project can
-derive its own controllers, orders, AI systems, components, widgets, and gameplay policies without
-using generated Blueprints.
+## Testing tools
 
-Content Sets also accept complete hand-authored actor classes. Set `ExistingUnitActorClass` on a
-unit definition to a Character Blueprint or native `ACharacter` subclass, or set
-`ExistingBuildingActorClass` to a Pawn Blueprint or native `APawn` subclass. The generator registers
-that exact class in production, construction, starter-scenario, and skirmish rosters and does not
-create or rewrite `BP_<Id>` for the entry. This is the code-first route for studios whose gameplay
-configuration already lives in constructors or class defaults.
+The RTS player controller uses `URTSCheatManager`, so in Play in Editor you can type
+`SpawnInspect Worker` or `SpawnInspect Rifleman` in the console to spawn and select a unit for
+inspection. `SpawnInspect` also accepts a full class path ending in `_C`. To add your own short
+names, make a Blueprint child of `RTSCheatManager`, add them to **Inspectable Unit Classes**, and
+select that class on your player controller. Spawned units belong to the first AI player if there is
+one, otherwise to you. Unreal turns cheat managers off in Shipping builds.
 
-An existing class is authoritative: its components own visuals, combat/gather/build catalogs,
-costs, production/drain catalogs, and presentation. The definition still owns the stable id,
-faction/role, and scenario roster references. **Validate Content Set** checks the complete shared
-RTS component contract plus every component implied by the entry's declared capabilities and gives
-an actionable finding for each omission. For builders and production buildings, the existing
-class must already reference the intended constructible/product classes; generation deliberately
-does not mutate customer-owned classes. Clear the existing-class field whenever the definition
-should generate and configure a Blueprint instead.
+## Swapping art
 
-Code projects can derive from `ARTSHUD`, override `HandleConsoleWidgetCreated`, or replace
-`ConsoleWidgetClass` and `DefaultMinimapWidgetClass`. `GetConsoleWidget()` exposes the live root
-without requiring viewport searches or project-specific globals.
+Gameplay size comes from the Content Set (a unit's **Size**, a building's **Footprint**), not from the
+mesh. Replacing art never changes selection, pathing, placement, attack range, gathering distance or
+navigation blocking.
 
-Blueprint and C++ projects can implement custom orders without changing plugin source. Blueprint
-orders override the native events on `RTSOrder`; C++ orders override the matching `_Implementation`
-methods. See `Docs/ORDERS.md` for registration, command-card, networking, and authority details.
+- Static units: set **Static Mesh**.
+- Animated units: set **Skeletal Mesh**, an **Anim Set** made for the same skeleton, and an
+  **Animation Mode**: **Direct Anim Set (No Anim Blueprint)**, or **Custom Animation Blueprint** for
+  your own Animation Blueprint driven by the unit's `RTSAnimComponent`.
 
-Economy components expose the same two-language extension contract for custom harvesting,
-resource-source admission, deposits, affordability, and payments. See `Docs/ECONOMY.md` for the
-authority and data-invariant requirements.
+The quickest way is **Use My Model for a Unit...** on the Content Set's right-click menu: pick the
+unit and mesh, then **Create Anim Set from My Clips...** to map your clips. See
+[the guided workflow](MULTIRIG_ANIM.md#guided-editor-workflow) for automatic animation triggers,
+custom abilities, Animation Blueprints, sounds and effects.
 
-Builder, construction-site, and production components expose Blueprint Native Events for their
-core policies and transitions. See `Docs/CONSTRUCTION_PRODUCTION.md` for queue, payment, refund,
-rally-point, and authority rules.
+Editor Utility Blueprints and C++ tools can call **Validate Imported Unit Presentation** before
+changing a Content Set; it runs the same checks and returns coded findings. These checks confirm the
+setup is valid, not that the animation looks right; always review the unit in play.
 
-Combat actions from widgets route through the owning player controller, and combat state remains
-server-authoritative and replicated. See `Docs/COMBAT_NETWORKING.md` for custom Blueprint/C++
-ability targeting, stance, attack, research, and mutation rules.
+Manny, Mixamo, Meshy, marketplace and studio characters all use this same workflow once their clips
+are imported for the chosen skeleton. The plugin never includes or depends on those assets.
 
-## Built-in QA spawning
+## How the plugin's own content stays self-contained
 
-`ARTSPlayerController` uses `URTSCheatManager` by default, so PIE sessions and other sessions in
-which Unreal permits cheats can spawn deterministic inspection units without project code. The
-console commands `SpawnInspect Worker` and `SpawnInspect Rifleman` resolve plugin-owned starter
-classes. `SpawnInspect` also accepts a full soft class object path ending in `_C`.
-
-Blueprint projects can derive a Cheat Manager Blueprint from `URTSCheatManager`, add their own
-short names to **Inspectable Unit Classes**, and select that class on the Player Controller.
-C++ and Blueprint code can bypass string lookup with `SpawnInspectClass`, or use
-`ResolveInspectableUnitClass` when they want the same alias/full-path resolution. Spawning is
-server-authoritative; an inspection unit belongs to the first AI player when one exists and falls
-back to the invoking player otherwise. Unreal disables cheat managers in Shipping builds by
-default, so this QA surface does not create a production-game command channel.
-
-## Reskin contract
-
-Gameplay size comes from authored radius, height, and footprint data—not mesh bounds. Replacing art
-therefore does not silently change selection, pathing, construction placement, attack range, gather
-reach, or navigation blocking.
-
-Static units may assign `StaticMesh`. Skeletal units assign:
-
-- `SkeletalMesh`
-- a skeleton-compatible `RTSAnimSet` containing locomotion and action clips
-- `Direct Anim Set` for the zero-AnimBlueprint path, or `Custom Animation Blueprint` for an
-  advanced graph that consumes `RTSAnimComponent` state
-
-Editor Utility Blueprints and C++ authoring tools can call `ValidateImportedUnitPresentation`
-before changing a Content Set. It runs the same read-only structural checks as the native apply
-workflow and returns stable coded findings for CI or batch-import routing. Passing that preflight is
-necessary but does not replace rendered retarget, deformation, and camera-distance review; use the
-fixture evidence checklist in `MULTIRIG_ANIM.md` before claiming a specific rig family.
-
-This is vendor-neutral. Manny, Mixamo, Meshy, marketplace characters, and studio-owned rigs all use
-the same contract after their clips are imported or retargeted to the selected skeleton. The plugin
-does not bundle or hard-reference project-specific vendor assets.
-
-## Product boundaries
-
-- Bundled plugin assets must never depend on `/Game` packages.
-- StarMaps faction data, maps, meshes, animation examples, and tuning remain project content.
-- Experimental StarMaps authoring scripts are not part of the customer workflow or verification.
-- Customer documentation and runtime/editor modules are included by `BuildPlugin`.
-- Clean packaging, bundled-content isolation, Blueprint generation, and runtime contracts are
-  enforced by automation tests.
+The plugin's bundled assets never depend on your project's `/Game` content, so the plugin works in
+a blank project. Your generated assets may use your own art from `/Game`; that is how reskinning
+works.

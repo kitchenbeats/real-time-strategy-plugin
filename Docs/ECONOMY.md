@@ -1,4 +1,4 @@
-# Economy and Harvesting Extension Contract
+# Economy and Gathering
 
 The default economy supports multiple resource types, finite resource sources, worker carrying
 capacity and cooldowns, optional enterable sources, team-owned drop-off buildings, replicated
@@ -30,11 +30,26 @@ Gatherer payload changes drive `On Carried Resources Changed`, and the active so
 owner-only with `On Gathering Source Changed`, so Blueprint HUDs do not need to poll or infer server
 state.
 
+For custom source actors, enable actor **Replicates** as well as component replication and include
+`RTSVisibleComponent`. A replicated component alone cannot transport a dynamically spawned actor to
+remote players. Generator 10 configures actor replication on generated source bases; regenerate
+older generated outputs to adopt it. A class you set as a resource source's **Replace With Class**
+(`ExistingSourceActorClass`) is yours and is never modified by generation. Preserve the standard visibility routing rather than enabling **Always
+Relevant** to work around a missing source. See [Network Security](NETWORK_SECURITY.md).
+
 Extractor absorption runs automatically for pre-placed/finished extractors and when construction
 finishes. Custom construction pipelines can call `Try Absorb Raw Source`; it returns true only after
 the compatible raw node's exact remaining pool commits and the raw actor is removed. Selection is
 deterministic for equidistant nodes, nested absorption is rejected, failed removal rolls the
 extractor pool back, and `On Raw Source Absorbed` exposes the committed result to Blueprint.
+
+Extractors require a compatible, non-depleted neutral raw source within their absorption radius
+for placement by default. Placement and absorption select the same source; only that source is
+excluded from the building collision check. Other buildings and obstacles still block placement.
+For a self-contained extractor with its own authored resource pool, disable **Require Raw Source
+For Placement** on its component defaults, or call `ConfigureExtractor(Radius, false)` before
+`BeginPlay`. Existing one-argument calls use the new required-source default. Code binding an exact
+one-argument member-function pointer must adopt the two-argument signature and rebuild.
 
 `Distribute Idle Workers` is an authority-only Blueprint/C++ orchestration call. It requires the
 world context and owning controller to belong to the same world, rejects recursive distribution
@@ -50,12 +65,11 @@ cannot duplicate or silently discard a surviving worker's payload. Deposit prese
 unreliable multicast because authoritative cargo and wallet balances already replicate; a burst of
 worker drop-offs cannot clog the reliable gameplay channel.
 
-Assign Blueprint component subclasses on customer-owned unit, building, controller, child, or
-composed-class defaults exactly as native components are assigned. Keep those classes outside the
-generated output root. Select a generated-base child from a customer-owned roster/map seam that
-keeps its parent expected, or supply a complete stable native/project-owned actor class through the
-Content Set's existing-class field. Configure a generated base through its Content Set definition
-instead of editing the generated Blueprint. The
+Assign Blueprint component subclasses in the class defaults of your own units, buildings and
+controllers, exactly as native components are assigned: in a unit's or building's
+**Custom Blueprint**, or in a complete class set through **Replace With Class**. Keep those classes
+outside the generated folders. Configure a generated Blueprint through its Content Set entry instead
+of editing it. The
 built-in gathering order and worker AI resolve these components by base class, so derived components
 participate without plugin changes. Configured resource-source actor classes also accept Blueprint
 and C++ subclasses, allowing a customer to reskin or specialize a supported source without

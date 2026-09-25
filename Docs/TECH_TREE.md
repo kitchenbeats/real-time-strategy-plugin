@@ -1,4 +1,4 @@
-# Tech tree — prerequisites, tier gating, "why locked" (data-driven, Blueprint-only)
+# Tech Tree
 
 The plugin gates production and research through **one** decision point (`URTSTechLibrary`), so the
 command card, tooltips, AI, and server authority all agree. **You author the tree as DATA — zero C++.**

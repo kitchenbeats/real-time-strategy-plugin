@@ -1,4 +1,4 @@
-# Multiplayer team pings
+# Team Pings
 
 The plugin ships a complete server-routed map-ping path. In the bundled minimap, **Alt + click**
 sends a ping to the sender's team and to observers. A blank-project RTS gets multiplayer pings

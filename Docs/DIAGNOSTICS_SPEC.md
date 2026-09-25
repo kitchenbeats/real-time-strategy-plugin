@@ -1,4 +1,4 @@
-# RTS Diagnostics
+# Diagnostics
 
 A diagnostic match has three consumers; each needs its own output:
 dev watching live (overlay), agent/tooling iterating (structured events + verdicts),
@@ -20,7 +20,6 @@ CI (exit codes). This document defines their shared runtime contract.
    - `Move.Stall` {unit, order, secondsStill} · `Move.Voided` {unit, order}
 3. **Dev HUD overlay** (`rts.diag.hud 1`): per-player scoreboard, squad states, income
    sparklines, live watchdog status.
-4. Later: HTML match report (Tools/ script over the JSONL), baseline diff tool.
 
 ## Match acceptance
 
@@ -38,7 +37,7 @@ CI (exit codes). This document defines their shared runtime contract.
    `ProjectSavedDir/Diagnostics` resolves inside the app container. Failure to create or write the
    verdict raises `VerdictWrite` and fails the process.
    Add `-RTSPerformanceCapture` to record fixed-memory wall-frame P50/P95/P99, average/worst
-   frame time, >50/>100/>200 ms hitches, five-second sampled actor/pawn/RTS-unit/projectile/component/
+   frame time, >50/>100/>200 ms hitches, one-second sampled actor/pawn/RTS-unit/projectile/component/
    widget/order/production peaks, resident and Unreal-tracked memory, GC timing, sampled network
    rates/backlog, strategic-request work, and scoped replication/fog work counters. Add
    `-RTSPerformanceTier=100`, `500`, or `1000` to
@@ -48,8 +47,8 @@ CI (exit codes). This document defines their shared runtime contract.
    `-RTSPerformanceBudget=Client100|Client500|Client1000|Server500|Server1000` to enforce the
    corresponding frame/hitch thresholds after at least ten sampled wall minutes; budget runs must
    explicitly pass `-RTSPerformanceSampleSeconds=600` or longer. An automatic client budget pass is
-   a frame-threshold verdict, not full release qualification: the external qualification runner must
-   also prove resolution, scalability, VSync, fog/presentation, hardware, and raw-capture metadata. Client
+   a frame-threshold verdict, not a complete performance test: whoever runs it must also record and
+   check resolution, scalability, VSync, fog/presentation, hardware, and the raw captures. Client
    profiles reject dedicated-server and `NullRHI` runs; server profiles require a dedicated server.
    Qualification invocations may also pass an absolute, previously nonexistent
    `-RTSPerformanceCsvOutput=<file>.csv` together with a bounded
@@ -65,8 +64,8 @@ CI (exit codes). This document defines their shared runtime contract.
    and future server-world capture epoch; remote clients synchronize capture without spawning actors or requiring hidden
    enemy actors to replicate. The 60-second warm-up cannot be reduced for a budget verdict.
    The configurable 60-second wall-clock warm-up is unaffected by simulation speed. This is
-   foundational telemetry, not performance evidence: the installed-package hardware and scenario
-   matrix in `PERFORMANCE_SOAK.md` remains required.
+   foundational telemetry, not performance evidence: measure your packaged game on your target
+   hardware with your own scenarios.
    A synchronized sample run remains active through its declared wall-clock end even if the match
    result arrives earlier. Other runs finish on a committed result because post-match AI
    intentionally stands down; repeat mode calls `ResetSkirmish` and requires multiple complete matches in the
@@ -79,9 +78,13 @@ CI (exit codes). This document defines their shared runtime contract.
    names. It proves occupied placement rejection; construction order, payment, completion,
    cancellation, and refund; production order, payment, cancellation, and refund; targeted rally,
    spawning, movement, real supply consumption, and the supply-block rejection/event contract. To
-   isolate those API transactions from enemy interruption, the harness temporarily applies the
-   local player's maximum supported speed boost and God Mode, then restores both on completion,
-   failure, reset, deinitialization, or verdict. This is not balance or survivability evidence.
+   isolate those API transactions from enemy interruption while keeping construction sites visible
+   to the five-second poll, the harness temporarily enables God Mode and normalizes any authored or
+   cheat construction/production multiplier to the neutral `1.0`, then restores the exact prior
+   values on completion, failure, timeout, match end, reset, deinitialization, or verdict. A private
+   non-`UObject` probe owns this state machine and all of its delegate bindings; the MatchCheck
+   subsystem remains the sole tick, reflected callback target, alarm sink, and verdict publisher.
+   This is not balance or survivability evidence.
 2. **Watchdog framework + v1 watchdogs** (poll-based now; will consume the event stream for
    richer rules once it lands):
    - `EconomyLiveness` — a player with workers but zero income for 60s (the dead-economy class)
@@ -92,8 +95,13 @@ CI (exit codes). This document defines their shared runtime contract.
      rich-idle candidate across the complete run, including recovered candidates.
    - `TeleportDetector` — any pawn displaced farther than MaxSpeed × window (the builder-teleport class)
    - `WorkerSlaughter` — a roster with draft-capable workers suffers repeated worker deaths at
-     home with no drafted-defense response (the harass-loop class). Unarmed worker definitions
-     cannot legally be drafted, so their deaths remain in telemetry but do not arm this watchdog.
+     home without a new draft event. The shared strategic-collapse policy defers this alarm while
+     a materially superior hostile force occupies the remaining infrastructure. Casualty counts
+     and the unanswered run survive deferral; polling reevaluates the pending failure when the
+     occupation clears, even without another death. The verdict's per-player `workerDefenseWatch`
+     records the unanswered count, current deferral, observation count, and last classified local
+     hostile/global friendly strength. This measures draft-event progress, not whether every
+     casualty could have been saved. Unarmed worker deaths remain in telemetry without arming it.
    - `StuckStorm` — no-progress order voids past threshold/min
 
 ## Shared conventions
@@ -147,3 +155,11 @@ CI (exit codes). This document defines their shared runtime contract.
   "csvCapture": {"requirement": "required|not-applicable",
   "status": "finalized|invalid|not-applicable", "filename"}},
   "stats": {per-player headline numbers}}`.
+
+## Rendered selection inspection
+
+In non-Shipping builds, `rts.diag.select BP_Worker_C_0` selects an existing locally owned actor
+through the normal selection component. Supply up to 32 exact actor names to inspect a mixed
+selection. The whole request is rejected if a name is absent or not locally owned/selectable.
+It does not spawn actors, grant resources, issue gameplay orders, or move the camera. Use it with
+Unreal's `Shot showui` command to review the actual portrait, information panel, and command card.
