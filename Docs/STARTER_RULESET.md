@@ -40,8 +40,11 @@ and one gas geyser.
 **Match Setup > Arena Preset** in the Content Set chooses **Twin Crossings** or **Open Arena**.
 Twin Crossings needs **Num Players** 2, **Maximum Participants** 2 and a **Playable Half Extent**
 of 6000 cm. **Open Arena** is a flat map with bases in a circle and allows up to sixteen players,
-limited by the map size. The same limit applies to the setup screen, server travel options, lobby
-requests and rematches; a request that does not fit fails before the map is set up.
+limited by the map size. Bases are spread so that main bases stand at least 18 m apart and no base's
+mineral fields or geysers come within 10 m of another base's, so every base keeps a field of its
+own; expansions sit on an outer ring and must fit on the floor too. A 6000 cm Open Arena holds
+seven players. The same limit applies to the setup screen, server travel options, lobby requests
+and rematches; a request that does not fit fails before the map is set up.
 
 Matches started without the setup screen (the `rts.skirmish.start` console command, a dedicated
 server, an automated check) read these travel options on the map URL: `?NumBases=` (players,

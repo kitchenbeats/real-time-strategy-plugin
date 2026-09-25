@@ -79,6 +79,15 @@ merged an eight-player map into one location at its center. MatchCheck's Economy
 alarms while a player without a finished drop-off building is building one, or cannot afford one.
 New `AI.Decision` events: `declineWorkerDraft` and `attackTarget`.
 
+Skirmish layout spacing now keeps every base's resources at least 10 m from any other base's, not
+only base centers 18 m apart: on an eight-player 6000 cm arena neighbors' resources ran together
+and the AI saw one base location at the center of the map. Every start, with or without a faction catalog and including a
+`?NumBases=` travel option, is spaced and fitted to the map; before, catalog-free starts skipped both
+and URL counts were never re-spaced. Two to four players keep their layouts; the Reference arena now
+holds seven players instead of a crowded eight. The Content Set generator and validator size maps
+with the same rule. `RTSSkirmishLayoutRules` (private) gains the placement functions the match
+spawns resources with.
+
 `ARTSGameMode` overrides `InitNewPlayer` and `ChangeName`. Humans are named "Player N" unless the
 `RTSName` travel option names them; the online subsystem's nickname (often the host name) is no longer
 shown. Requested names are trimmed, stripped of control characters and limited to 20 characters.
@@ -112,7 +121,7 @@ Reviewed public-header fingerprint: `117328E10C8CA288BAC9C03B333CCFB0F9B330C7` (
 Reflection: `06D9A0572E6A5C88F81B0EF0EFAADA31C2DB6706` (2,092 records).
 Coverage: `RTS.AI.WorkerDefense.FightsBackAndResumesMining`, `RTS.AI.WorkerDefense.ChaseRadiusEndsAutomaticPursuit`, `RTS.AI.WorkerDefense.IdleWorkersDoNotStartFights`,
 `RTS.AI.WorkerDefense.NeighborMineralLineIsNotAnIntrusion`, `RTS.UI.InfoPanelDescriptionAndDeadSelection`, `RTS.Framework.MatchState.ObservingForfeits`, `RTS.Skirmish.Factions.DifficultyTravelOption`,
-`RTS.AI.WorkerDefense.NoDraftIntoHopelessFight`, `RTS.AI.WorkerDefense.IdleSoldiersDoNotCoverAScout`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
+`RTS.AI.WorkerDefense.NoDraftIntoHopelessFight`, `RTS.AI.WorkerDefense.IdleSoldiersDoNotCoverAScout`, `RTS.Skirmish.Factions.ResourceFieldsStaySeparate`, `RTS.Skirmish.Factions.SandboxAndDifficulty`,
 `RTS.Match.PlayerNames`, `RTS.Skirmish.Factions.SetupRemembersChosenName`,
 `RTS.UI.RelationshipPresentation`, `RTS.UI.CommandCard.HotkeysShownInMatch` and
 the migration and example-graph cases in `RTS.ContentSet.AuthoringExperience`.
