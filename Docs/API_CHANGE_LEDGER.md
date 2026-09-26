@@ -12,6 +12,80 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Group moves, reachability islands and buildings that make room
+
+**Date:** 2026-09-26 · **Stage:** pre-release
+
+Group moves follow StarCraft's magic box. `URTSOrderSubmissionComponent` sends a group ordered to a
+point outside the area it covers there as it stands, each unit keeping its offset from the group's
+centre, and a group ordered to a point inside that area to the point itself. Units heading for one
+destination settle as a clump: `URTSMovementSubsystem` stops a unit when it touches a group-mate that
+has already arrived there, near the destination. This replaces the fixed 170 cm formation grid; a
+unit whose place a wall or building cuts off goes to the open spot nearest to it.
+
+New private `URTSNavigationIslands` records which parts of the navigation mesh are joined, rebuilt
+at most once a frame when a tile changes. "Can a unit walk from here to there" checks
+(`URTSCollisionLibrary::HasCompleteNavPath`, `IsNavReachable`, the move-order check and player group
+moves) answer from it instead of running a path search, and fall back to the search whenever the
+answer is not certain (no mesh, a point off the mesh, one-way links).
+
+Attack-move and patrol orders are checked like moves, for the AI too: a destination the unit cannot
+reach becomes the closest point it can reach (`ARTSPawnAIController::ResolveMarchDestination`), and
+player group attack-moves and patrols check their destination once per order. A stalled attack-move
+or patrol leg now gets the same prompt replans a stalled move gets before its order is voided.
+
+A building a player places no longer rejects the spot for that player's own or allied units standing
+on it: new `URTSCollisionLibrary::IsSuitableLocationForActorForPlayer` and `IsFriendlyUnit`, used by
+the player controller's `CanPlaceBuilding`, the builder and the placement grid. Enemy units and
+obstacles still reject it. When a building's footprint appears, units standing on it are slid out
+to open ground beside it and keep their orders; before, a building placed on idle units trapped them.
+The placement cursor is now spawned with the player controller as its owner.
+
+`FRTSOrderData` is unchanged. Customer impact: a group moved to a far point no longer lines up in a
+square grid but keeps its shape; code that relied on the grid spacing must not. Placement code that
+expects the player's own units to block a site must call `IsSuitableLocationForActor` (no player).
+
+Reviewed public-header fingerprint: `24FA12AFBD4706930A42F607319D38FC9AB9746E` (182 paths).
+Reflection: `2CBC712C3BF097791F3AA98FA36A42520D6B0D5E`.
+Coverage: `RTS.Integration.Navigation.IslandsMatchPathSearch`,
+`RTS.Integration.Construction.OwnUnitsMakeWayForBuildings`, the sealed attack-move case in
+`RTS.Integration.Movement.PlayerMovesStopWhereTheGroupCanStand`, and the movement benchmark
+(`converge`, `building_on_units`, `closed`, every scenario).
+
+## Units push each other instead of passing through
+
+**Date:** 2026-09-26 · **Stage:** pre-release
+
+New private `URTSMovementSubsystem` settles every ground unit once per frame on the authority, after
+CharacterMovement moves them. Overlapping units push each other apart instead of walking through each
+other (their capsules still overlap the Pawn channel, so nothing deadlocks on collision): a unit holding
+position is never pushed, a working unit (mining, attacking in reach, building, repairing) is pushed
+only by working or holding units, a moving unit pushes idle ones, and equals share. Two harvesting
+units pass through each other so mineral lines never jam. A moving unit that friends have kept from
+progressing for 1.5 s slips past them for a second, so two units meeting head-on in a one-unit corridor
+both get through; enemies always block. Two units walking at each other both keep to their right and
+pass. Pushes stay on the navigation mesh. Registered units stop re-checking their floor while they
+stand still (`bAlwaysCheckFloor` off), the largest idle cost of a big army. `rts.movement.push 0`
+turns pushing off for comparison.
+
+The subsystem also supplies separation steering from one spatial hash, replacing a physics overlap
+query per moving unit per frame; `ARTSPawnAIController::ComputeNeighbourSeparation` is removed.
+
+`FRTSUnitDefinition` adds **Acceleration** (cm/s per second, for speeding up and braking) and **Turn
+Rate** (degrees per second). Both default to 0, which keeps the engine defaults the generator applied
+before; a turn rate turns the body toward its movement at that rate.
+
+The movement benchmark adds a `mining` scenario (a base with 16 or 24 workers; `income_per_minute`,
+`idle_workers`), finishes the construction of the buildings it places, and counts two bodies as
+touching only when they overlap by more than a tenth of their combined radii.
+
+Customer impact: units no longer overlap freely, so projects that relied on units stacking (for
+example several units ordered onto one point) now see them spread around it.
+
+Coverage: `RTS.Integration.Movement.UnitsPushInsteadOfPassingThrough`, the acceleration and turn-rate
+cases in `RTS.Authoring.ContentSet.GenerateMinimal`, and the movement benchmark (every scenario,
+including `mining`).
+
 ## One mover per order, checked player moves
 
 **Date:** 2026-09-25 · **Stage:** pre-release

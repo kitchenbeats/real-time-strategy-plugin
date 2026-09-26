@@ -94,6 +94,15 @@ required for this generator upgrade. The generator does not rewrite classes you 
 **Replace With Class** (`ExistingUnitActorClass` or `ExistingSourceActorClass`); configure movement
 and replication on those classes yourself. Keep your own assets outside the generated folders.
 
+## Unit acceleration and turn rate (generator 12)
+
+Unit definitions gain **Acceleration** (cm/s per second, used for speeding up and braking) and
+**Turn Rate** (degrees per second). Both default to 0, which keeps the engine's movement defaults:
+full speed within a fifth of a second and an instant turn toward the direction of travel. A turn
+rate above 0 makes the generated Character turn its body toward its movement at that rate instead
+of following the controller's heading. Regenerate owned outputs after setting either value; no
+schema or generator upgrade is involved.
+
 ## Generator 12: localized research presentation
 
 Research options now accept optional **Display Name** and **Description** fields. Generator 12

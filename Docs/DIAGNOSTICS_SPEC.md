@@ -131,10 +131,14 @@ their own walls and buildings:
 | `closed` | 20 Riflemen are ordered into a sealed enclosure. |
 | `attack` | 30 Riflemen attack an enemy Headquarters 5,500 cm away that cannot be destroyed; a unit arrives once the Headquarters is within its weapon range. |
 | `scale` | 300 Riflemen (or `-RTSNavBenchUnits=<n>`) cross 8,000 cm. |
+| `mining` | A Headquarters, eight mineral fields and 16 workers (or `-RTSNavBenchUnits=<n>`) mine for 120 s. |
+| `converge` | 50 Riflemen spread 2.5 m apart are ordered onto their own centre and should settle into a clump. |
 
 Other options: `-RTSNavBenchUnits=<n>` overrides a scenario's unit count,
 `-RTSNavBenchOutput=<directory>` the report folder, `-RTSNavBenchContent=<folder>` the Content Set
-the units and buildings load from, and `-RTSNavBenchKeepAlive` keeps the process running. For a
+the units and buildings load from, `-RTSNavBenchCsv` records a CSV profile of the run
+(`navbench_<scenario>.csv`, with the RTS category enabled: `MovementSettle`, `NavigationIslands`, and
+the engine's own timings), and `-RTSNavBenchKeepAlive` keeps the process running. For a
 rendered run, `-RTSNavBenchView` centres the camera on the scenario and `-RTSNavBenchShots=<seconds>`
 saves a screenshot at that interval (from the renderer, so the window does not need focus).
 
@@ -149,13 +153,15 @@ The report (`"schema": "navbench/1"`) holds, for the ordered units:
   and `order_voids` (no-progress order voids during the run).
 - `heading_reversals_per_moving_unit_minute`: direction changes over 120 degrees while moving.
 - Body overlap, counted every frame: `peak_touching_pairs`/`touching_pair_seconds` (centres closer
-  than the sum of radii) and `peak_stacked_pairs`/`stacked_pair_seconds` (closer than half of it),
+  than 90% of the sum of radii) and `peak_stacked_pairs`/`stacked_pair_seconds` (closer than half),
   plus `final_overlapping_pairs`/`final_stacked_pairs` at the end. Units that walk through each
   other still arrive fast, so these are the numbers that show it.
 - `worst_clump_ratio` and `clumps`: each arrived group's radius over the radius of the densest disc
   the same units could form.
 - For `attack`, `arrival_vs_straight_line` measures against the distance to the target's footprint
   less the weapon range.
+- `mining`: `income_per_minute` (minerals banked), `working_units` and `idle_workers` (workers that
+  stopped working; should be 0). Miners count toward overlap and falls but not arrival or stalls.
 - `units_inside_footprint` (`building_on_units`): units still inside the building 2.5 s after it
   appeared.
 - `final_goal_distance` (to the goal each unit's order gave it) and `requested_goal_distance` (to the

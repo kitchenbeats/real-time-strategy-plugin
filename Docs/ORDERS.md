@@ -141,8 +141,21 @@ pawn cancel each other's moves:
 
 Any new order hands the pawn back to the tree at once.
 
+Units do not pass through each other: bodies that overlap are pushed apart every frame. A unit on
+Hold Position is never pushed; a unit that is working (mining, attacking in reach, building,
+repairing) is pushed only by other working or holding units; a moving unit pushes idle ones out of
+its way. Two workers mining or carrying cargo pass through each other so mineral lines never jam,
+a unit blocked by friends for more than a moment slips past them, and two units walking at each
+other both keep to their right. Enemy units always block.
+
 A move the player gives a group is checked once for the whole group: a destination the group
 cannot reach (inside walls, across a cliff, off the map's walkable area) becomes the closest point
-it can reach, and each unit's spot in the formation is moved in front of any wall or building that
-would separate it from the group. Move destinations sit on the navigation mesh, so their height
-can differ slightly from the clicked point.
+it can reach. Attack-move and patrol destinations are checked the same way, for the AI too.
+
+Group moves follow StarCraft's "magic box". Clicking outside the area the selected units cover
+moves the group as it stands: each unit keeps its place relative to the others. Clicking inside
+that area gathers the group on the point: units heading for one destination stop when they touch a
+group-mate that has already arrived there, so they settle as a clump instead of jostling for the
+exact spot. A unit whose place a wall or building would cut off from the group goes to the open
+spot nearest to it. Move destinations sit on the navigation mesh, so their height can differ
+slightly from the clicked point.
