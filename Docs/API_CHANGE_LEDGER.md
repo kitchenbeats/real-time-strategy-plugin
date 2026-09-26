@@ -12,6 +12,54 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## One mover per order, checked player moves
+
+**Date:** 2026-09-25 · **Stage:** pre-release
+
+Measured with the movement benchmark before and after (see DIAGNOSTICS_SPEC.md).
+
+Attack orders are run by `ARTSPawnAIController` alone. The behavior tree's attack branch issued its
+own MoveTo against the controller's approach move every time it re-evaluated; each cancelled the
+other, and a player attack on a building 55 m away never arrived (30 Riflemen crept about 4 m in a
+minute). The tree is now suspended for the length of an attack order, and a ready weapon fires the
+frame the target is in reach instead of waiting for the controller's 0.5 s order sweep. Hold
+Position fires the same way, so a weapon whose cooldown is not a multiple of 0.5 s fires at its
+authored rate (a 0.7 s weapon fired every 1.0 s before).
+
+The four flags through which flight, gathering approach, cargo return and repair each paused and
+resumed the behavior tree (and could resume it under one another) are replaced by one owner,
+`EDirectMover`, with `BeginDirectMovement`, `EndDirectMovement` and `EndAnyDirectMovement`. Any
+newly accepted order ends it, stopping a repair in progress.
+
+A move the player gives is checked once per order in `URTSOrderSubmissionComponent`: one path query
+from the group's centre turns a goal the group cannot reach into the closest point it can reach, and
+a formation slot that a wall, cliff or building separates from the goal moves to the nearest free
+slot in front of it. Player move destinations now sit on the navigation mesh, so their height can
+differ slightly from the clicked point.
+
+Local separation no longer steers a unit off the navigation mesh. A crowd along a map edge pushed its
+outer units over the rim, where they fell until the world's kill height. It also counts only other
+units' bodies: buildings and the floor answer the same collision channel, so a unit near a building's
+origin, or within 2 m of the map centre where the generated floor sits, was pushed away from it, and
+an actor with several colliding parts pushed once per part.
+
+Customer impact: a project that customized the bundled behavior tree's attack branch no longer sees
+it run during attack orders; customize attacks through `URTSAttackComponent`'s `CanUseAttack` and
+`UseAttack` events (ORDERS.md, "How units move under an order"). Code comparing a player move's
+destination with the clicked point must compare ground position only. Nothing else changes for
+callers; the header change is private members of `ARTSPawnAIController`.
+
+`URTSMatchCheckSubsystem` keeps ticking while the world is paused and fails a run that exceeds its
+wall-clock limit (`WallClock`, `-RTSMatchCheckWallLimit=<seconds>`). A match that ended on its first
+frame paused the world before the harness ticked, and the run waited forever.
+
+Reviewed public-header fingerprint: `9FAE94ECF272D28FE61547FCB3774A09F99A437C` (182 paths).
+Reflection: `9DB050282DA3C51E5C76E5144AA8196D324955E0` (unchanged).
+Coverage: `RTS.Integration.Combat.AttackOrderReachesDistantTarget`,
+`RTS.Integration.Combat.HoldPositionFiresAtWeaponCooldown`,
+`RTS.Integration.Movement.PlayerMovesStopWhereTheGroupCanStand`, and the movement benchmark
+(`attack`, `closed` and `scale` scenarios).
+
 ## Movement benchmark
 
 **Date:** 2026-09-25 · **Stage:** pre-release

@@ -106,6 +106,10 @@ CI (exit codes). This document defines their shared runtime contract.
      hostile/global friendly strength. This measures draft-event progress, not whether every
      casualty could have been saved. Unarmed worker deaths remain in telemetry without arming it.
    - `StuckStorm` — no-progress order voids past threshold/min
+   - `WallClock` — the run did not finish in wall-clock time: three times the expected run (match
+     length × repeats ÷ speed) plus any performance sample and 15 minutes, or
+     `-RTSMatchCheckWallLimit=<seconds>`. The harness also keeps judging while the world is paused,
+     since a finished match pauses it.
 
 ## Movement benchmark
 
@@ -154,7 +158,15 @@ The report (`"schema": "navbench/1"`) holds, for the ordered units:
   less the weapon range.
 - `units_inside_footprint` (`building_on_units`): units still inside the building 2.5 s after it
   appeared.
-- `frame_wall_ms` (p50/p95/max) with the benchmark's own work subtracted, and `unit_radii`.
+- `final_goal_distance` (to the goal each unit's order gave it) and `requested_goal_distance` (to the
+  point the scenario asked for). When an order redirects an unreachable goal, units can arrive at
+  their own goal while staying far from the requested one; the second number shows it.
+- `fell_off_map` and `fallen` (unit, seconds, where it left the ground): units that dropped a metre
+  below where they spawned.
+- `stuck_units`: up to 12 units that did not arrive, with their order, path-following state,
+  location, goal and longest pause.
+- `frame_wall_ms` (p50/p95/max) with the benchmark's own work subtracted, `worst_frames` (the five
+  slowest, with the second of the run each happened), and `unit_radii`.
 
 The process exits 0 when the scenario ran and 1 when it could not be set up (`setup_failure`).
 

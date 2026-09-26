@@ -124,3 +124,25 @@ state. UI availability and client-side target checks are feedback, not security 
 Use `ARTSPlayerController::IsOrderClassAllowedFromClient_Implementation` to extend the inbound
 class allow policy in C++, or override **Is Order Class Allowed From Client** in a controller
 Blueprint. Call the parent policy when extending the built-in allow-list.
+
+## How units move under an order
+
+The pawn's behavior tree (`BT_RTSPawnBehaviorTree`) runs most orders. A few orders are run by
+`RTSPawnAIController` itself, and the tree is suspended while they do, because two movers on one
+pawn cancel each other's moves:
+
+- **Attack.** The controller walks the unit to a free spot around the target within weapon range
+  and fires the frame its weapon is ready. The tree's attack branch does not run during an attack
+  order, so customize attacks through `RTSAttackComponent`'s **Can Use Attack** and **Use Attack**
+  events rather than the tree.
+- **Hold Position.** The unit never moves and fires at the best target in range at its weapon's
+  cooldown.
+- **Return cargo, repair, the approach to a resource, and flight.**
+
+Any new order hands the pawn back to the tree at once.
+
+A move the player gives a group is checked once for the whole group: a destination the group
+cannot reach (inside walls, across a cliff, off the map's walkable area) becomes the closest point
+it can reach, and each unit's spot in the formation is moved in front of any wall or building that
+would separate it from the group. Move destinations sit on the navigation mesh, so their height
+can differ slightly from the clicked point.
