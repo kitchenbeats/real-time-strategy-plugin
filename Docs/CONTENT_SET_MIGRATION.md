@@ -94,6 +94,15 @@ required for this generator upgrade. The generator does not rewrite classes you 
 **Replace With Class** (`ExistingUnitActorClass` or `ExistingSourceActorClass`); configure movement
 and replication on those classes yourself. Keep your own assets outside the generated folders.
 
+## Sight radius per unit and building, and fog memory (generator 12)
+
+Unit and building definitions gain **Sight Radius** (cm). It defaults to 0, which keeps **Gameplay
+Defaults > Unit Sight Radius** or **Building Sight Radius**, so existing Content Sets see as before.
+Regenerated buildings and resource sources now leave a Brood War "last seen" snapshot in the fog of
+war (their vision component's **Leaves Frozen Ghost**); before, a mineral field or enemy building out
+of sight vanished. The bundled starters give their town hall 1,750 cm of sight so it sees its whole
+mineral line. Regenerate owned outputs to pick up both; no schema upgrade is involved.
+
 ## Unit acceleration and turn rate (generator 12)
 
 Unit definitions gain **Acceleration** (cm/s per second, used for speeding up and braking) and

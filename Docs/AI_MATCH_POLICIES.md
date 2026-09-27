@@ -100,7 +100,11 @@ Workers join only a fight their base can win. When the intruders' strength excee
 strength of everything at the base that can answer them (local defenders and the workers that
 could be drafted), the bot declines the draft and keeps its workers mining. Each declined draft is
 counted (`GetTotalDeclinedWorkerDrafts`), and MatchCheck's `WorkerSlaughter` watchdog accepts it as
-a defense response.
+a defense response. A region already fighting keeps fighting until the intruders grow to 1.6
+times its strength, so the decision does not flicker as workers pick up and drop off cargo
+mid-fight. A drafted worker whose target dies or leaves takes another intruder that still needs a
+defender instead of going back to mine, and it chases its target up to 800 cm past the base region's
+edge (never toward another player's base) before giving up.
 
 Each drafted worker retains its economic anchor and issued target. When military relief arrives,
 a target leaves, or the defender crosses the 2,500 cm economic-region boundary, excess or invalid

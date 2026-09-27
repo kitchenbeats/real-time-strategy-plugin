@@ -12,6 +12,50 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Mouse-playtest fixes: selection, command card, placement, fog, sight, drafts, rally clumps
+
+**Date:** 2026-09-27 · **Stage:** pre-release
+
+Found by playing the Complete starter with the mouse and keyboard.
+
+- **Box selection** keeps StarCraft's priority: own units, else own buildings, else one other actor.
+  A box over the mineral line used to select the mineral fields with the workers (`RTSBoxSelection`,
+  private).
+- **Command card.** A worker's **Return Cargo** now keeps its slot, greyed while nobody carries
+  anything. Before, it appeared only while someone carried cargo and pushed every build button one
+  slot along, so the same key built a Supply Depot or a Barracks depending on cargo.
+- **Build orders** go to the selected unit closest to the site that is not already constructing;
+  before, the first eligible unit in selection order took it, abandoning a building in progress.
+- **Placement preview.** `ARTSBuildingCursor::GetGridCellSize` returns the building's footprint
+  divided by its grid width (new private `FootprintCellSize`), and the cursor snaps to those cells.
+  The bundled cursor's 500 cm `GridCellSize` had turned a 2 m depot's grid into a 10 m square that
+  lagged the pointer and sampled points 2.5 m away. `ARTSPlayerController::CanPlaceBuilding` now also
+  requires the whole building to fit, not only every grid sample.
+- **Fog memory and sight.** `FRTSUnitDefinition::SightRadius` and `FRTSBuildingDefinition::SightRadius`
+  (0 keeps the Content Set default) are new; generated buildings and resource sources leave a frozen
+  "last seen" snapshot in the fog. The bundled town halls see 1,750 cm, their whole mineral line; before,
+  a player's own minerals vanished whenever the workers left them.
+- **Worker drafts** keep a fight they entered until the intruders reach 1.6 times the region's
+  strength, retarget to another intruder when theirs dies or leaves, and chase up to 800 cm past the
+  region's edge (fewer release-and-redraft cycles).
+- **Loaded workers** accept a gather order (new `URTSGathererComponent::CanGatherAfterReturning`):
+  they drop their cargo off first, then work the source the order named. Before, right-clicking
+  minerals with a loaded worker (a builder just back from a site) did nothing.
+- **Rally clumps.** A unit resting near the destination it reached keeps counting toward that
+  destination's group, so units sent to a rally point one by one settle around it instead of queuing
+  into a line.
+
+Customer impact: Content Sets gain two optional fields and regenerate to pick up fog memory; a
+customized cursor Blueprint that sized its grid plane from `GetGridCellSize` now fits the footprint
+without change.
+
+Reviewed public-header fingerprint: `F17E335163E59A0995360AA609F27A5BF0E4786C` (182 paths).
+Reflection: `F8418CD8CD28E001951A2ABBB8AF9FF89044C250` (the two Sight Radius fields).
+Coverage: `RTS.Packaging.BundledStarterFogMemory` (new), `RTS.AI.WorkerDefense.RegionsAndPursuit`
+(leash and retarget), watched and mouse-played matches.
+
+---
+
 ## Builders walk to the site's ring, mined-out bases mine elsewhere, declined drafts count
 
 **Date:** 2026-09-26 · **Stage:** pre-release

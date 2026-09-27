@@ -86,7 +86,7 @@ its fields. The identity fields show first; the rest are grouped:
 | **Identity** | **Id**, **Faction**, **Role**, **Display Name**, **Description**. Role describes the unit's job; the AI sends units with the Role `Worker` to gather. |
 | **Appearance** | **Visual Mode** (your own mesh, or a generated placeholder shape), **Skeletal Mesh** or **Static Mesh**, **Portrait**, **Size** (collision radius and height; the art is scaled to fit), **Visual Rotation** and **Visual Offset** (to fix imported meshes that face the wrong way or sit too high), and how long the body stays after death. |
 | **Animation** | **Anim Set** (the unit's clips), **Animation Mode** (**Direct Anim Set (No Anim Blueprint)** or **Custom Animation Blueprint**) and the **Animation Blueprint Class** for the custom mode. |
-| **Stats** | **Maximum Health**, **Armor**, **Unit Size**, **Move Speed**, **Acceleration** (how quickly it reaches full speed and stops), **Turn Rate** (degrees per second; 0 faces the direction of travel at once), **Is Air Unit**, **Interaction Reach** (how close the unit gets to gather, build or repair) and starting gameplay tags. |
+| **Stats** | **Maximum Health**, **Armor**, **Unit Size**, **Move Speed**, **Acceleration** (how quickly it reaches full speed and stops), **Turn Rate** (degrees per second; 0 faces the direction of travel at once), **Sight Radius** (how far it sees through the fog; 0 uses **Gameplay Defaults > Unit Sight Radius**), **Is Air Unit**, **Interaction Reach** (how close the unit gets to gather, build or repair) and starting gameplay tags. |
 | **Combat** | **Attacks** (one entry per weapon: damage, range, cooldown, projectile, splash, and whether it hits ground, air or both), the **Weapon**, **Armor** and **Shield Upgrade** research lines it benefits from, shields, **Stances** (for example a siege mode), **Starting Stance**, and **Worker Fights Back**. |
 | **Economy** | **Gathers** (which resources it collects, how much per trip, how fast), **Can Repair** and the repair rate and cost. |
 | **Production** | Training cost, whether it is paid up front or over time, **Production Time**, **Supply Cost** and **Required Buildings**. |
@@ -122,7 +122,7 @@ Building entries work the same way. The groups that differ from units:
 | --- | --- |
 | **Identity** | **Role**: what the building does for the player and the AI. **Townhall** is the main base, **Supply** raises the supply cap, **Production** trains units, **Tech** unlocks things, **Extractor** sits on a resource node, **Resource Depot** accepts returned resources, **Tower** defends. |
 | **Appearance** | **Static Mesh**, **Portrait** and **Footprint**: the size on the ground used for collision, placement and pathing. **Reach Margin** lets workers gather, drop off, build or repair from a little further away, which helps with large buildings such as a town hall. |
-| **Stats** | **Maximum Health**, **Armor**, **Supply Provided**. |
+| **Stats** | **Maximum Health**, **Armor**, **Supply Provided**, **Sight Radius** (how far it sees through the fog; 0 uses **Gameplay Defaults > Building Sight Radius**). Give a town hall enough to see its own mineral line. |
 | **Combat** | **Attacks** for a defensive building. A building with attacks shoots enemies in range by itself. |
 | **Construction** | Cost, **Construction Time**, grid size and **Required Buildings**. |
 | **Production** | **Trains Units** and **Research Options** (upgrades such as weapon and armor levels, with cost, time, number of levels and requirements). |
@@ -130,6 +130,14 @@ Building entries work the same way. The groups that differ from units:
 
 A worker can build a building when the worker has **Can Build** turned on and either lists the
 building under **Can Build** or leaves that list empty (which allows every building of its faction).
+
+Generated buildings and resource sources remember how they looked in the fog of war, as in Brood
+War: once seen and then out of sight, an enemy building or a mineral field stays drawn as it was last
+seen, and is updated when you see its location again.
+
+The placement grid covers the building's **Footprint** exactly, divided into the building's grid
+size (cells of about one metre suit most buildings), and each cell shows whether that patch of ground
+is free. The building can be placed where every cell is free and the whole footprint fits.
 
 ### Tech requirements
 

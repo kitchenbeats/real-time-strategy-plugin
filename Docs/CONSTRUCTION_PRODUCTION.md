@@ -97,7 +97,11 @@ The native cursor includes its own transform root, so a C++ project does not nee
 scene component merely to obtain functional cursor movement.
 
 The bundled building cursor snaps before validating, and the controller uses that exact snapped
-location for feedback, order dispatch, and placement delegates. Moving to a new cell immediately
+location for feedback, order dispatch, and placement delegates. For a building with a
+`URTSFootprintComponent`, the grid covers exactly that footprint (`GetGridCellSize` returns the
+footprint divided by the grid width) and the cursor snaps to those cells, so the preview stays under
+the pointer; `GridCellSize` applies only to buildings without a footprint. A location is placeable
+when every cell is free and the whole building fits (`IsSuitableLocationForActorForPlayer`). Moving to a new cell immediately
 refreshes collision/navigation checks; a configurable stationary refresh detects moving blockers
 without repeating every grid trace every rendered frame. `MaximumGridWidthAndHeight` defaults to
 32 cells per axis to prevent an accidental Blueprint footprint from creating unbounded synchronous

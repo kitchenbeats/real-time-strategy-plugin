@@ -125,6 +125,16 @@ Use `ARTSPlayerController::IsOrderClassAllowedFromClient_Implementation` to exte
 class allow policy in C++, or override **Is Order Class Allowed From Client** in a controller
 Blueprint. Call the parent policy when extending the built-in allow-list.
 
+## Selecting and commanding like StarCraft
+
+A drag box selects the player's own units when it holds any, otherwise their own buildings, and
+otherwise a single other actor to inspect, so a box over the mineral line picks up the workers and
+not the minerals. An order only one unit carries out, such as placing a building, goes to the
+selected unit closest to the target that is not already constructing something, so a selection that
+includes a busy builder never pulls it off its site. A worker's command card keeps **Return Cargo**
+in its slot (greyed while nobody carries anything), so the build buttons after it, and their hotkeys,
+never move.
+
 ## How units move under an order
 
 The pawn's behavior tree (`BT_RTSPawnBehaviorTree`) runs most orders. A few orders are run by
