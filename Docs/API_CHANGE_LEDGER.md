@@ -12,6 +12,47 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Refinery placement, status chip, a gentler Easy AI, and fixes from mouse play
+
+**Date:** 2026-09-27 · **Stage:** pre-release
+
+Further findings from mouse play.
+
+- **Refinery placement.** The preview locks onto the geyser it will be built on (new
+  `URTSCollisionLibrary::FindPlacementRawSource`), and the grid cells do not count that geyser as an
+  obstacle; the fitted grid had otherwise made refineries unplaceable.
+- **Status chip.** The info panel no longer labels every building SIEGED (buildings carry the
+  immobilized tag from construction); a unit its stance locks in place shows that stance's name.
+- **Easy AI** trains 60% of the workforce, builds one production building and attacks from 5:00 in
+  small waves (new `EasyWorkerTargetShare`, `EasyTargetArmyBuildings`, `GetWorkerTargetFor`; changed
+  defaults of `EasyAttackArmyMultiplier` 2 → 0.66 and `EasyEarliestAttackSeconds` 360 → 300). Before,
+  Easy ran Normal's economy and saved one larger army for a 6-minute push, which beat a new player
+  in every mouse-played match. The setup screen's difficulty descriptions are localized texts; they
+  used enum tooltips, which packaged games do not carry.
+- **Chasing stays near home.** A unit that answered an attack and won inside its chase radius used to
+  make the spot where the fight ended its new home, so fight after fight led an idle army across the
+  map into the enemy base. The chain of automatic fights now keeps the place it began; the unit
+  walks back there once it has chased farther than its chase radius from it.
+- **One scout.** The AI sends one worker to scout, as CommandCenter does, and a second only when the
+  first died before finding an enemy base. It used to replace every dead scout, feeding the
+  defender a worker every half minute.
+- **No false alerts from construction.** Starting a building drops the new site from full to its
+  starting health; that raised "under attack!" and a damage number. New
+  `URTSHealthComponent::IsHealthLossFromDamage` (Blueprint-callable) tells listeners of
+  `OnHealthChanged` which losses were attacks; the event feed and damage numbers use it.
+- **Diagnostics.** The AI's home-defense order is reported `queued` once per decision, not on every
+  think while the AI saves for it.
+
+Customer impact: none for game code. Projects that tuned the Easy AI in config keep their values;
+the new defaults only apply where none are set.
+
+Reviewed public-header fingerprint: `2CD33DFB624E3A2F65B0BD4A9474FBB5AA507F95` (182 paths).
+Reflection: `3D1DF161125765BA52A88ABC070923843C942C8A`.
+Coverage: `RTS.AI.Difficulty.EconomyAndAttackPressure` (new), `RTS.AI.WorkerDefense.ChaseRadiusEndsAutomaticPursuit`,
+`RTS.AI.Scout.VisibilityAndClearedMemory`, `RTS.UI.Audio.LocalRoutingAndLifetime`, placement and AI suites, mouse play.
+
+---
+
 ## Mouse-playtest fixes: selection, command card, placement, fog, sight, drafts, rally clumps
 
 **Date:** 2026-09-27 · **Stage:** pre-release

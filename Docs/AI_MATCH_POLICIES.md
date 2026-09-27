@@ -5,6 +5,19 @@ abilities, and army buildings from the player's own actor/component data. A resk
 faction normally uses it unchanged. Projects can add a strategic twist or replace it without
 forking `RTSAIBotSubsystem`.
 
+## Difficulty
+
+The setup screen (or `?AIDifficulty=` on the map URL) picks each AI opponent's difficulty:
+
+| Difficulty | Plays |
+| --- | --- |
+| **Passive** | Builds an economy and an army and defends itself, but never attacks. |
+| **Easy** | Trains 60% of the normal workforce (`EasyWorkerTargetShare`), builds one production building (`EasyTargetArmyBuildings`), attacks no earlier than 5:00 (`EasyEarliestAttackSeconds`) in small waves of about two thirds of Normal's attack size (`EasyAttackArmyMultiplier`), keeps no more than one wave before then, and never picks off workers with its scout. |
+| **Normal** | The full configuration: 16 workers, up to three production buildings, attacks once its army reaches six. |
+
+All of these are `Config` properties of `URTSAIBotSubsystem`, so a project retunes them in its
+`DefaultGame.ini` without code.
+
 ## Built-in strategic safety policy
 
 Attack squads and each unit's close-range automatic acquisition choose targets by capability, not
@@ -120,6 +133,10 @@ reservations. The built-in coordinator supplies its active scouts. Both overload
 orders and belong in authority-owned strategy code.
 
 ## Scout observation and cleared regions
+
+Each AI player spends one worker on scouting, as CommandCenter does. A second goes out only when the
+first died before it found an enemy base; a scout that found the enemy did its job, and replacing it
+would only feed the defender workers.
 
 Scout discovery, worker harassment and nearby-worker danger checks require a valid hostile team
 and current visibility for the scouting player's controller. Allied units and structures are never

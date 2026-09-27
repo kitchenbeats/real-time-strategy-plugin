@@ -97,7 +97,9 @@ its fields. The identity fields show first; the rest are grouped:
 **Worker Fights Back** controls what a gathering unit does when it or a nearby ally is attacked.
 Off (the StarCraft behavior) keeps workers mining until you order them to fight. On makes them
 fight back and then return to mining once the attacker is dead or has run farther than the worker
-will chase (**Gameplay Defaults > Attack Chase Radius**). Soldiers always fight back.
+will chase (**Gameplay Defaults > Attack Chase Radius**). Soldiers always fight back, and measure
+that radius from where the first fight found them: one that chases farther walks back there, so a
+stream of enemies cannot lead an idle army away from where you left it.
 
 ### Add a unit
 
