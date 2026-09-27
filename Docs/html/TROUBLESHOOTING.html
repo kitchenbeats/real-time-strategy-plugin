@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting — Real-Time Strategy</title>
+<style>
+:root { color-scheme: light dark; --bg: #fbfbfa; --fg: #1d1f23; --muted: #5d6470; --line: #d9dce1;
+  --panel: #f0f1f3; --accent: #1f6fb2; --code-bg: #eef0f3; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16181c; --fg: #e4e6ea; --muted: #a3a9b3; --line: #343841; --panel: #1f2227;
+    --accent: #6cb4f0; --code-bg: #24282e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+header { border-bottom: 1px solid var(--line); background: var(--panel); }
+header .bar { max-width: 980px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap;
+  gap: 6px 18px; align-items: baseline; }
+header .brand { font-weight: 700; color: var(--fg); text-decoration: none; margin-right: 8px; }
+header nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+header nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+header nav a:hover, header nav a.current { color: var(--accent); }
+main { max-width: 980px; margin: 0 auto; padding: 8px 20px 48px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; }
+h1 { font-size: 2em; margin-top: 0.8em; }
+h2 { font-size: 1.45em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.15em; }
+a { color: var(--accent); }
+p, ul, ol, table, pre, blockquote { margin: 0 0 1em; }
+li { margin: 0.2em 0; }
+li > ul, li > ol { margin: 0.2em 0 0.2em; }
+code { font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; padding: 0; overflow-wrap: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+blockquote { border-left: 4px solid var(--line); padding: 0 14px; color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+footer { max-width: 980px; margin: 0 auto; padding: 16px 20px 32px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="index.html">Real-Time Strategy</a><nav><a href="index.html">Home</a><a href="INSTALL_QUICKSTART.html">Getting Started</a><a href="CONTENT_SET_GUIDE.html">Content Set</a><a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint</a><a href="EXTENSION_GUIDE.html">C++</a><a href="PACKAGING.html">Packaging</a><a href="TROUBLESHOOTING.html" class="current">Troubleshooting</a></nav></div></header>
+<main>
+<h1 id="troubleshooting">Troubleshooting</h1>
+<p>Problems people run into in their first hours with the plugin, and how to fix them. When something
+fails, look first at the <strong>Output Log</strong> (<strong>Window &gt; Output Log</strong>; plugin messages use the <code>LogRTS</code>
+category) and the <strong>Message Log</strong> (<strong>Window &gt; Message Log</strong>, page <strong>RTS Authoring</strong>).</p>
+<h2 id="the-plugin-does-not-appear-or-does-not-load">The plugin does not appear or does not load</h2>
+<ol><li><strong>Edit &gt; Plugins</strong>: search for <strong>Real-Time Strategy</strong>, make sure it is ticked, and restart the
+editor.</li><li>The plugin must match your engine version. Messages such as "missing modules" or "built with a
+different engine version" mean the installed plugin does not match UE 5.8. Install the 5.8
+version again from the Fab Library.</li><li>If you copied the plugin into your project, <code>RealTimeStrategy.uplugin</code> must sit directly in
+<code>&lt;YourProject&gt;/Plugins/RealTimeStrategy</code>. An extra folder level (for example
+<code>Plugins/RealTimeStrategy-1.3.0/RealTimeStrategy</code>) stops Unreal from finding it.</li><li>Keep exactly one copy of the plugin. Remove a project copy if it is also installed in the engine,
+and never mix files from two versions.</li><li>In a C++ project, a failed build stops the plugin from loading. Build the project in your IDE and
+fix the first compiler or linker error in the list; later errors are often caused by the first.</li></ol>
+<h2 id="the-rts-menu-or-the-content-set-commands-are-missing">The RTS menu or the Content Set commands are missing</h2>
+<ul><li>The <strong>RTS</strong> menu and the <strong>Tools &gt; Real-Time Strategy</strong> entries come from the plugin's editor
+module. They appear only after the plugin is enabled and the editor restarted.</li><li><strong>Generate Game</strong>, <strong>Check for Problems</strong> and the other <strong>RTS Game</strong> commands appear when you
+right-click a <strong>Content Set</strong> asset, not other assets. They are also buttons at the top of the
+Content Set editor.</li><li>A packaged game never contains these editor tools. That is expected.</li></ul>
+<h2 id="i-cannot-find-the-plugins-sample-content">I cannot find the plugin's sample content</h2>
+<p>Plugin content is hidden in the Content Browser by default. Open the Content Browser <strong>Settings</strong>
+menu and turn on <strong>Show Plugin Content</strong>. The sample game is at
+<code>/RealTimeStrategy/Starter/Complete/Generated/Maps/L_RTSComplete_Starter</code>, or open it with
+<strong>RTS &gt; Open the Plugin's Sample Map</strong>. The plugin's samples are read-only; install the starter game
+to get a copy you can edit.</p>
+<h2 id="the-map-looks-empty-in-the-editor">The map looks empty in the editor</h2>
+<p>This is normal. Bases, workers, buildings and resource nodes are created when the match starts.
+In the editor viewport the map holds only the ground, lights and a few volumes (navigation, vision,
+minimap and fog of war). Press <strong>Play</strong> to see the match.</p>
+<h2 id="play-says-there-is-no-generated-map-yet">Play says there is no generated map yet</h2>
+<p>A Content Set has no map until you choose <strong>Generate Game</strong>. If the message stays after generating,
+open <strong>Match Setup</strong> in the Content Set and make sure <strong>Generate Map</strong> is on, then generate again.</p>
+<h2 id="my-changes-do-not-show-up-in-the-game">My changes do not show up in the game</h2>
+<ul><li>Choose <strong>Generate Game</strong> after changing the Content Set. Play uses the generated assets, not the
+Content Set directly.</li><li>Play the generated map. The Content Set's <strong>Play</strong> button opens the right one. If you use the
+editor's own Play button, check that the open level is your <code>L_&lt;Id&gt;_Starter</code> map.</li></ul>
+<h2 id="my-edits-to-a-generated-blueprint-disappeared">My edits to a generated Blueprint disappeared</h2>
+<p>Everything in the <code>Generated</code> folders is rebuilt by <strong>Generate Game</strong>, which replaces changes made
+directly to those assets. Opening a generated unit or building Blueprint shows a notification saying
+so, and <strong>Generate Game</strong> asks <strong>Replace edited Blueprints?</strong> before replacing edits it detects.</p>
+<p>Put Blueprint logic in a <strong>Custom Blueprint</strong> instead: open the unit or building in the Content Set
+and choose <strong>Create Custom Blueprint</strong> (in its <strong>Blueprint</strong> group), or use the button on that
+notification. Custom Blueprints are saved in a <code>Custom</code> folder next to the Content Set, and
+Generate never overwrites them. See
+<a href="CONTENT_SET_GUIDE.html#add-blueprint-logic-to-a-unit-or-building">The Content Set</a>.</p>
+<p>Change numbers, names, costs and art in the Content Set itself, not in any Blueprint.</p>
+<h2 id="create-custom-blueprint-shows-an-error">Create Custom Blueprint shows an error</h2>
+<ul><li>"'X' has not been generated yet": choose <strong>Generate Game</strong> first, then create the Custom Blueprint.</li><li>"... is inside a folder that Generate owns": the Content Set itself is saved inside its own
+generated output folder. Move the Content Set to a folder of your own, then try again.</li><li>"An asset named ... already exists and is not a child of ...": an unrelated asset already uses
+the name <code>BP_&lt;Id&gt;_Custom</code> in the <code>Custom</code> folder. Rename or delete it, then try again.</li></ul>
+<h2 id="generate-game-or-check-for-problems-reports-errors">Generate Game or Check for Problems reports errors</h2>
+<p>The <strong>RTS Authoring</strong> page of the Message Log lists each problem with its cause and the fix. Fix
+the first error, choose <strong>Check for Problems</strong> again, and generate once it passes. Common ones:</p>
+<ul><li><strong>An Id that does not exist.</strong> A <strong>Trains Units</strong>, <strong>Can Build</strong>, <strong>Required Buildings</strong> or match
+setup field names an Id that no entry has, usually after an Id was renamed. Pick the right entry
+from the drop-down list.</li><li><strong>An asset Generate did not create sits in a generated folder.</strong> Generate refuses to overwrite
+assets it does not own. Move your own assets out of the <code>Generated</code> folders.</li><li><strong>Custom Blueprint problems.</strong> The Custom Blueprint was deleted or moved, is not a child of the
+generated <code>BP_&lt;Id&gt;</code>, sits inside a generated folder, or the entry also has <strong>Replace With Class</strong>
+set. Fix the field as the message says; <strong>Create Custom Blueprint</strong> makes a correct one.</li><li><strong>Replace With Class is missing components.</strong> A class set through <strong>Replace With Class</strong> must
+contain every RTS component the entry needs. The message names the missing component.</li><li><strong>Files are read-only.</strong> With source control, check out the generated files (or let Unreal check
+them out) before you generate.</li></ul>
+<p><strong>Fix Simple Problems</strong> (right-click the Content Set) repairs values that have only one sensible
+answer and then checks again. It never invents design values such as health, costs or Ids.</p>
+<h2 id="units-do-not-move-or-walk-through-walls">Units do not move, or walk through walls</h2>
+<p>Units move on Unreal's navigation mesh. Generated maps come with it built. In a map you made
+yourself, or after you move the floor or add obstacles:</p>
+<ol><li>Make sure the ground has collision. The navigation mesh is built only on surfaces that have
+collision.</li><li>Place a <strong>Nav Mesh Bounds Volume</strong> that covers the whole playable area.</li><li>In <strong>World Settings</strong>, under <strong>Navigation System Config</strong>, set <strong>Navigation System Class</strong> to
+<code>RTSNavigationSystem</code>. Generated maps do this for you. It lets buildings placed during a match
+cut holes in the navigation mesh.</li><li>Choose <strong>Build &gt; Build Paths</strong>, then press <strong>P</strong> in the viewport to show the navigation mesh.
+Walkable ground turns green.</li></ol>
+<p>While playing, open the console (backtick key) and run <code>rts.diag.audit</code>. It lists setup problems
+in the Output Log, each line starting with <code>[audit]</code> and giving the cause and the fix:</p>
+<ul><li><code>NAV.NO_DATA</code>: the map has no navigation data. Add or enlarge a <strong>Nav Mesh Bounds Volume</strong> and
+rebuild paths.</li><li><code>NAV.PAWN_OFF_MESH</code>: a unit stands outside the navigation mesh. Check where it spawns, its size
+and the floor's collision.</li><li><code>NAV.PAWN_FALLING</code>: a unit is falling near the navigation mesh. Check its spawn height and the
+floor's collision.</li></ul>
+<p><code>rts.diag.audit.fix</code> also applies safe runtime fixes, such as giving an AI controller to a unit
+that has none. It never edits your map. <code>rts.diag.draw 1</code> draws order lines and marks stuck units
+in the world.</p>
+<h2 id="workers-do-not-gather-or-do-not-bring-resources-back">Workers do not gather or do not bring resources back</h2>
+<ul><li>The worker's <strong>Gathers</strong> list (Content Set, <strong>Economy</strong> group) must include the resource.</li><li>A building must accept the resource: its <strong>Accepts Resources</strong> list must include it. The main
+base usually accepts every resource.</li><li>A resource source with <strong>Requires Extractor</strong> (like a gas geyser) needs a building with
+<strong>Extracts Resource</strong> built on top before anyone can gather.</li><li>If workers stop at the edge of a large building without dropping off, raise that building's
+<strong>Reach Margin</strong> (in its <strong>Footprint</strong>).</li></ul>
+<h2 id="the-ai-attacks-too-early-or-kills-my-workers">The AI attacks too early, or kills my workers</h2>
+<p>On the setup screen, choose <strong>Passive</strong> or <strong>Easy</strong> under <strong>AI difficulty</strong>, or <strong>None (sandbox)</strong>
+under <strong>AI opponents</strong>. Change the preselected difficulty with <strong>Match Setup &gt; Default AI Difficulty</strong>
+in the Content Set. To make workers defend themselves, turn on <strong>Worker Fights Back</strong> on the worker
+unit (Content Set, <strong>Combat</strong> group).</p>
+<h2 id="my-character-model-looks-wrong">My character model looks wrong</h2>
+<ul><li><strong>Grey or default material in a packaged game.</strong> Open the character's materials and, under
+<strong>Usage</strong>, turn on <strong>Used with Skeletal Mesh</strong>, then save them.</li><li><strong>Facing the wrong way, too high or too low.</strong> Adjust the unit's <strong>Visual Rotation</strong> and
+<strong>Visual Offset</strong> in the Content Set. The art is scaled to the unit's <strong>Size</strong>; change <strong>Size</strong>, not
+the mesh scale.</li><li><strong>The model is rejected when you apply it.</strong> The skeletal mesh, its Anim Set and every clip must
+use the same skeleton.</li><li><strong>Direct Anim Set (No Anim Blueprint)</strong> needs saved, full-pose, in-place clips. It rejects
+additive and root-motion clips, because the RTS movement code moves the unit. Use
+<strong>Custom Animation Blueprint</strong> for layered animation, aim offsets, IK or motion matching.</li><li><strong>Use Unreal's Manny for Units cannot find Manny.</strong> The command needs the UE 5.8 Third Person
+template's Characters content in your project. Add it (<strong>+ Add &gt; Add Feature or Content Pack</strong>,
+then the Third Person template content), save, and run the command again.</li></ul>
+<p>See <a href="MULTIRIG_ANIM.html">Vendor-Neutral Skeletal Animation</a> for the full checklist.</p>
+<h2 id="it-works-in-the-editor-but-not-in-the-packaged-game">It works in the editor but not in the packaged game</h2>
+<ul><li>Check <strong>Project Settings &gt; Maps &amp; Modes &gt; Game Default Map</strong>: it must be your generated map.</li><li>Make sure every asset your game loads is cooked. Assets referenced only by name (for example from
+your own data tables of paths) must be added to the packaging settings.</li><li>Search the packaged game's log for the first "missing package", Blueprint error or <code>LogRTS</code> error.</li></ul>
+<p>See <a href="PACKAGING.html">Packaging and Multiplayer</a>.</p>
+<h2 id="after-updating-or-disabling-the-plugin">After updating or disabling the plugin</h2>
+<p>Do not save assets that depend on the plugin (your Content Set, generated Blueprints, maps) while
+the plugin is disabled or failing to load. Turn it back on, restart, open your Content Set, choose
+<strong>Check for Problems</strong>, then <strong>Generate Game</strong>. If Generate says the Content Set needs an upgrade,
+follow <a href="CONTENT_SET_MIGRATION.html">Content Set Migration</a>.</p>
+<h2 id="asking-for-help">Asking for help</h2>
+<p>Use <strong>RTS &gt; Report a Problem</strong> to open the support page. Include:</p>
+<ul><li>the plugin version, your UE 5.8 version, operating system and target platform;</li><li>whether your project is Blueprint-only or C++;</li><li>the steps that reproduce the problem, starting from the installed starter game or a new Content
+Set if possible;</li><li>the first error from the Output Log or Message Log, with the lines around it; and</li><li>for character problems, where the model came from, its import settings, skeleton and animation
+mode.</li></ul>
+<p>Remove passwords, account names and other private details from logs before you share them.
+<a href="SUPPORTED_PRODUCT_CONTRACT.html">What's Supported</a> describes what support covers.</p>
+</main>
+<footer>Real-Time Strategy plugin 1.3.0. This page is generated from <code>Docs/TROUBLESHOOTING.md</code>.</footer>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C++ Extension Rules — Real-Time Strategy</title>
+<style>
+:root { color-scheme: light dark; --bg: #fbfbfa; --fg: #1d1f23; --muted: #5d6470; --line: #d9dce1;
+  --panel: #f0f1f3; --accent: #1f6fb2; --code-bg: #eef0f3; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16181c; --fg: #e4e6ea; --muted: #a3a9b3; --line: #343841; --panel: #1f2227;
+    --accent: #6cb4f0; --code-bg: #24282e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+header { border-bottom: 1px solid var(--line); background: var(--panel); }
+header .bar { max-width: 980px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap;
+  gap: 6px 18px; align-items: baseline; }
+header .brand { font-weight: 700; color: var(--fg); text-decoration: none; margin-right: 8px; }
+header nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+header nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+header nav a:hover, header nav a.current { color: var(--accent); }
+main { max-width: 980px; margin: 0 auto; padding: 8px 20px 48px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; }
+h1 { font-size: 2em; margin-top: 0.8em; }
+h2 { font-size: 1.45em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.15em; }
+a { color: var(--accent); }
+p, ul, ol, table, pre, blockquote { margin: 0 0 1em; }
+li { margin: 0.2em 0; }
+li > ul, li > ol { margin: 0.2em 0 0.2em; }
+code { font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; padding: 0; overflow-wrap: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+blockquote { border-left: 4px solid var(--line); padding: 0 14px; color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+footer { max-width: 980px; margin: 0 auto; padding: 16px 20px 32px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="index.html">Real-Time Strategy</a><nav><a href="index.html">Home</a><a href="INSTALL_QUICKSTART.html">Getting Started</a><a href="CONTENT_SET_GUIDE.html">Content Set</a><a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint</a><a href="EXTENSION_GUIDE.html">C++</a><a href="PACKAGING.html">Packaging</a><a href="TROUBLESHOOTING.html">Troubleshooting</a></nav></div></header>
+<main>
+<h1 id="c-extension-rules">C++ Extension Rules</h1>
+<p>These rules apply to any C++ in your project that extends the Real-Time Strategy plugin: native
+subclasses, Blueprint overrides implemented on native classes, delegate subscribers, subsystem
+integrations and asynchronous work. Feature guides add narrower rules but never relax these. For an
+introduction, start with <a href="EXTENSION_GUIDE.html">Extending with C++</a>.</p>
+<h2 id="thread-model">Thread model</h2>
+<p>Plugin gameplay APIs, UObject callbacks, Blueprint events, component delegates, and replication
+notifications run on Unreal's game thread unless an API explicitly documents another thread. The
+plugin offers no way to change gameplay from a worker thread.</p>
+<ul><li>Read or mutate Actors, Components, UObjects, Worlds, subsystems, replicated containers, and
+delegates only on the game thread.</li><li>Worker tasks may operate on copied value data that has no UObject references. Do not capture raw
+UObject pointers, references to UObject-owned fields, iterators, or views into replicated arrays
+or maps.</li><li>Observe a UObject across a frame or asynchronous boundary with <code>TWeakObjectPtr</code>. Marshal the
+result to the game thread, resolve the weak pointer there, and revalidate the world, authority,
+ownership, match state, and transaction preconditions before use.</li><li>Treat arrays and structs returned by Blueprint getters as snapshots unless the API explicitly
+documents a live handle. Never retain an address into a returned or replicated container.</li></ul>
+<p>A safe asynchronous calculation copies input values and commits through an authoritative API only
+after returning to the game thread:</p>
+<pre><code class="language-cpp">TWeakObjectPtr&lt;ARTSPlayerController&gt; WeakController = Controller;
+const FMyRTSInput InputSnapshot = BuildValueSnapshot();
+
+Async(EAsyncExecution::ThreadPool,
+    [WeakController, InputSnapshot]()
+    {
+        const FMyRTSResult Result = ComputeFromValues(InputSnapshot); // No UObject access.
+
+        AsyncTask(ENamedThreads::GameThread,
+            [WeakController, Result]()
+            {
+                ARTSPlayerController* Controller = WeakController.Get();
+                if (!IsValid(Controller) || !Controller-&gt;HasAuthority())
+                {
+                    return;
+                }
+
+                // Revalidate current ownership, team, visibility, cost, range, cooldown,
+                // match state, and target state before calling the supported transaction API.
+                CommitValidatedResult(Controller, Result);
+            });
+    });</code></pre>
+<p>The project module owns the task and cancellation policy. A task must be safe to finish after its
+originating actor, world, match, or map has ended; a weak reference becoming invalid is a normal
+cancellation result.</p>
+<h2 id="authority-and-transaction-boundaries">Authority and transaction boundaries</h2>
+<p>The server owns gameplay truth. <code>BlueprintAuthorityOnly</code> and editor node filtering communicate
+intent; they are not a security boundary. Native extensions must enforce authority themselves.</p>
+<ul><li>A client sends intent through a supported request owned by its <code>ARTSPlayerController</code>: use a
+high-level controller <code>Issue...</code> facade or, for a generic selected-unit <code>FRTSOrderData</code>, call
+<code>GetOrderSubmission()-&gt;IssueOrderToSelectedActors()</code>. The replicated native submission component
+is request transport; do not add a second instance or call authority-only gameplay transactions
+directly. Never trust a client-provided owner, team, price, range result, visibility result,
+target relationship, winner, or arbitrary Actor reference.</li><li>For orders, the controller retains the high-level command facades, targeting flow,
+<code>IsOrderClassAllowedFromClient</code> policy, and public event surface. Its submission component owns
+generic selected-unit collection, structural validation, bounded admission, and packet-safe
+batching/RPC transport; the authority-side order implementation still revalidates gameplay.</li><li>Validate cheap request shape and rate limits first. On authority, resolve authoritative objects
+and revalidate ownership, team, fog visibility, target legality, resources, technology, capacity,
+range, cooldown, match state, and liveness immediately before mutation.</li><li>Use the plugin's transaction APIs for orders, abilities, economy, construction, production,
+research, containment, ownership transfer, elimination, and match completion. Direct field or
+replicated-container edits bypass ordering, rollback, notifications, and security checks.</li><li>A Boolean returned by a direct authority-side transaction reports that immediate authoritative
+commit. Request boundaries are different: <code>ARTSPlayerController::Issue...</code> and
+<code>URTSOrderSubmissionComponent::IssueOrderToSelectedActors()</code> report <strong>Request Accepted</strong> or
+<strong>Request Submitted</strong>, not eventual completion. Observe replicated state and feature
+completion/failure delegates. In every case, propagate <code>false</code> instead of broadcasting success
+or applying durable presentation.</li><li>Delegates and Blueprint events report committed state. Do not use a notification callback as
+authorization, and avoid recursively starting the same transaction from its completion delegate.</li></ul>
+<p>Client prediction may drive disposable presentation only. Replicated state and authoritative
+transaction results must correct it. An unreliable multicast can communicate effects, never durable
+gameplay truth.</p>
+<h2 id="uobject-ownership-and-lifetime">UObject ownership and lifetime</h2>
+<p>Use Unreal's ownership and garbage-collection model explicitly:</p>
+<ul><li>Store owned or required UObject references in reflected fields (<code>UPROPERTY</code> with <code>TObjectPtr</code>, or
+the equivalent reflected container). Use <code>TWeakObjectPtr</code> for observed actors and components that
+may disappear independently.</li><li>A raw pointer is acceptable only as a short-lived local on the game thread. Do not retain it
+across ticks, timers, latent actions, delegate callbacks, async tasks, travel, or match restart.</li><li>World subsystems are world-scoped. Resolve them from the current world; do not cache them across
+seamless travel, map load, PIE instance changes, or world teardown.</li><li>Reject cross-world objects. Recheck <code>GetWorld()</code> when an object supplied by external project code
+reaches a transaction boundary.</li><li>Do not mutate a Class Default Object at runtime. Configure instance defaults in constructors or
+supported setup APIs before the object registers or begins play.</li></ul>
+<p>Bind lifecycle-aware delegates to UObjects. If the publisher can outlive the subscriber, remove the
+binding during the subscriber's teardown (<code>NativeDestruct</code>, <code>EndPlay</code>, or <code>Deinitialize</code>, as
+appropriate). Clear owned timers, latent work, and external registrations during teardown. Cleanup
+must tolerate partial initialization and repeated or reordered world shutdown.</p>
+<p>Replication notifications can arrive before optional presentation objects exist and during
+teardown. They must be idempotent, tolerate missing dependencies, and derive presentation from the
+current replicated state rather than assuming notification order.</p>
+<h2 id="override-rules">Override rules</h2>
+<ul><li>Implement a <code>BlueprintNativeEvent</code> in C++ through its <code>_Implementation</code> method.</li><li>Call the parent implementation for additive policy. Skip it only where the feature guide names
+the event as a complete replacement and the subclass keeps every rule that guide documents.</li><li>Query and policy callbacks return decisions; they do not mutate gameplay, emit success, or launch
+asynchronous work unless their feature contract explicitly says otherwise.</li><li>Transaction overrides preserve the documented validation, payment, cooldown, refund, replication,
+delegate, and cleanup order. Prefer overriding the narrow policy hook instead of replacing the
+transaction.</li><li>Never call a Blueprint event from a worker thread. A C++ override and its Blueprint implementation
+share the same game-thread, authority, and lifetime rules.</li></ul>
+<h2 id="extension-review-checklist">Extension review checklist</h2>
+<p>Before shipping a project-owned extension, verify that it:</p>
+<ol><li>Compiles in Editor, Development, and Shipping without unity or shared-PCH assumptions.</li><li>Mutates gameplay only on authority and routes client intent through the owning controller's
+high-level facade or its native order-submission request component.</li><li>Revalidates every security and transaction precondition immediately before commit.</li><li>Uses supported transaction APIs and treats their return value as truth.</li><li>Holds UObject state through reflected strong references or deliberate weak references.</li><li>Unbinds external delegates and clears timers/tasks/registrations during teardown.</li><li>Touches UObjects and Blueprint only on the game thread; async work consumes copied values.</li><li>Handles destroyed actors, world teardown, travel, late replication, and missing presentation.</li><li>Keeps the parent behavior for every override, and documents any override that deliberately
+replaces it.</li><li>Passes the Content Set validator, relevant automation, and a packaged multiplayer run.</li></ol>
+<p>See <code>NETWORK_SECURITY.md</code> for hostile-client boundaries and fog-of-war replication,
+<code>OWNERSHIP_TEAMS.md</code> for ownership and team identity, and each feature guide for its transaction's
+specific invariants.</p>
+</main>
+<footer>Real-Time Strategy plugin 1.3.0. This page is generated from <code>Docs/CPP_EXTENSION_CONTRACT.md</code>.</footer>
+</body>
+</html>

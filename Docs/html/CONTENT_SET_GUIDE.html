@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Content Set — Real-Time Strategy</title>
+<style>
+:root { color-scheme: light dark; --bg: #fbfbfa; --fg: #1d1f23; --muted: #5d6470; --line: #d9dce1;
+  --panel: #f0f1f3; --accent: #1f6fb2; --code-bg: #eef0f3; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16181c; --fg: #e4e6ea; --muted: #a3a9b3; --line: #343841; --panel: #1f2227;
+    --accent: #6cb4f0; --code-bg: #24282e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+header { border-bottom: 1px solid var(--line); background: var(--panel); }
+header .bar { max-width: 980px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap;
+  gap: 6px 18px; align-items: baseline; }
+header .brand { font-weight: 700; color: var(--fg); text-decoration: none; margin-right: 8px; }
+header nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+header nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+header nav a:hover, header nav a.current { color: var(--accent); }
+main { max-width: 980px; margin: 0 auto; padding: 8px 20px 48px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; }
+h1 { font-size: 2em; margin-top: 0.8em; }
+h2 { font-size: 1.45em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.15em; }
+a { color: var(--accent); }
+p, ul, ol, table, pre, blockquote { margin: 0 0 1em; }
+li { margin: 0.2em 0; }
+li > ul, li > ol { margin: 0.2em 0 0.2em; }
+code { font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; padding: 0; overflow-wrap: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+blockquote { border-left: 4px solid var(--line); padding: 0 14px; color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+footer { max-width: 980px; margin: 0 auto; padding: 16px 20px 32px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="index.html">Real-Time Strategy</a><nav><a href="index.html">Home</a><a href="INSTALL_QUICKSTART.html">Getting Started</a><a href="CONTENT_SET_GUIDE.html" class="current">Content Set</a><a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint</a><a href="EXTENSION_GUIDE.html">C++</a><a href="PACKAGING.html">Packaging</a><a href="TROUBLESHOOTING.html">Troubleshooting</a></nav></div></header>
+<main>
+<h1 id="the-content-set">The Content Set</h1>
+<p>A <strong>Content Set</strong> is one data asset that describes your whole game: its units, buildings,
+resources, factions, match setup and shared rules. You edit the Content Set, then choose
+<strong>Generate Game</strong>. The plugin builds the playable game from it: a Blueprint for every unit,
+building and resource, plus a map, a game mode and the match settings.</p>
+<p>You never have to write code or edit generated Blueprints to change numbers, names, costs, tech
+requirements or art. Change the Content Set and generate again.</p>
+<h2 id="open-your-content-set">Open your Content Set</h2>
+<ul><li>After <strong>Install the Starter Game</strong>, choose <strong>RTS &gt; Customize My Game</strong> (also in
+<strong>Tools &gt; Real-Time Strategy</strong>). This opens <code>/Game/RTSStarterGame/DA_RTSStarter</code>.</li><li>Any other Content Set: double-click it in the Content Browser.</li><li>To make a new one: <strong>+ Add &gt; Gameplay</strong>, then <strong>RTS Content Set</strong> in the <strong>RTS</strong> section. It
+starts with a small working game (see <a href="INSTALL_QUICKSTART.html#5-start-a-new-game-from-scratch-optional">Getting Started</a>).</li></ul>
+<p>The plugin's own copies under <code>/RealTimeStrategy/Starter</code> are read-only samples. Edit the copy in
+your project instead.</p>
+<h2 id="the-actions-row">The Actions row</h2>
+<p>The top of the Content Set editor has four buttons:</p>
+<div class="table-wrap"><table><thead><tr><th>Button</th><th>What it does</th></tr></thead><tbody><tr><td><strong>Generate Game</strong></td><td>Checks the Content Set for problems, then rebuilds every generated asset from it.</td></tr><tr><td><strong>Play</strong></td><td>Opens this game's generated map and starts Play in Editor.</td></tr><tr><td><strong>Check for Problems</strong></td><td>Looks for mistakes without generating, and explains how to fix each one.</td></tr><tr><td><strong>Guide</strong></td><td>Opens this documentation.</td></tr></tbody></table></div>
+<p>The usual loop is: change something, <strong>Generate Game</strong>, <strong>Play</strong>.</p>
+<p>The same commands appear when you right-click a Content Set in the Content Browser, in the
+<strong>RTS Game</strong> section at the top of the menu:</p>
+<div class="table-wrap"><table><thead><tr><th>Menu entry</th><th>What it does</th></tr></thead><tbody><tr><td><strong>Generate Game</strong></td><td>Same as the button. Works on several selected Content Sets at once.</td></tr><tr><td><strong>Check for Problems</strong></td><td>Same as the button.</td></tr><tr><td><strong>Fix Simple Problems</strong></td><td>Fixes problems that have only one sensible answer, such as a negative cost or an empty output folder, then checks again. It never invents design values such as health, costs or ids. You can undo it with <strong>Edit &gt; Undo</strong>.</td></tr><tr><td><strong>Use My Model for a Unit...</strong></td><td>Picks a mesh and animations from your project for one unit. See <a href="CONTENT_SET_GUIDE.html#use-your-own-models">Use your own models</a>.</td></tr><tr><td><strong>Use Unreal's Manny for Units</strong></td><td>Gives the worker and the main combat unit Unreal's Manny character and animations. Needs the Third Person template's Characters content in your project.</td></tr></tbody></table></div>
+<p>Results appear in a notification. Details, including every problem found, go to the
+<strong>RTS Authoring</strong> page of the Message Log (<strong>Window &gt; Message Log</strong>). The Message Log opens by
+itself when <strong>Check for Problems</strong> or <strong>Generate Game</strong> finds errors.</p>
+<h2 id="sections-of-the-content-set">Sections of the Content Set</h2>
+<div class="table-wrap"><table><thead><tr><th>Section</th><th>What it holds</th></tr></thead><tbody><tr><td><strong>Actions</strong></td><td>The buttons above.</td></tr><tr><td><strong>Game</strong></td><td><strong>Display Name</strong> (your game's name as players see it) and <strong>Id</strong> (a short internal name used in generated asset names, such as <code>L_&lt;Id&gt;_Starter</code>). Changing the Id makes Generate create a new set of assets.</td></tr><tr><td><strong>Units</strong></td><td>Every unit in the game.</td></tr><tr><td><strong>Buildings</strong></td><td>Every building in the game.</td></tr><tr><td><strong>Resources</strong></td><td><strong>Resources</strong> (what players collect and spend, such as minerals and gas) and <strong>Resource Sources</strong> (the nodes placed on the map, such as mineral fields and gas geysers).</td></tr><tr><td><strong>Match Setup</strong></td><td>The generated map and match: factions, starting bases, number of players, AI difficulty and map layout.</td></tr><tr><td><strong>Gameplay Defaults</strong></td><td>Values shared by the whole game: sight, attack and chase distances, gathering, production queues, refunds, selection priority and health bar size.</td></tr><tr><td><strong>Presentation</strong></td><td><strong>Placeholder Art When Missing</strong> and the health bar, progress bar, selection ring and selection sound used by every unit and building.</td></tr><tr><td><strong>Advanced</strong></td><td>Output folders, the AI controller used by generated units, the asset's format version, and <strong>Reset to Starter Game...</strong>.</td></tr></tbody></table></div>
+<p>Hover over any field to see what it does. Distances are in centimeters and times in seconds.</p>
+<h3 id="ids-and-display-names">Ids and display names</h3>
+<p>Every unit, building, resource, resource source, faction and research line has two names:</p>
+<ul><li><strong>Display Name</strong> is what players see. Change it freely.</li><li><strong>Id</strong> is the short internal name other entries use to refer to it: a building's
+<strong>Trains Units</strong> list, a unit's <strong>Required Buildings</strong>, the starting worker in <strong>Match Setup</strong>,
+and so on. Keep the Id when you only want a new name for players.</li></ul>
+<p>Fields that refer to another entry are drop-down lists of the Ids defined in this Content Set,
+labelled with their display names. If you rename an Id, pick the new Id again in every field that
+used the old one; <strong>Check for Problems</strong> lists any reference that no longer matches.</p>
+<h2 id="units">Units</h2>
+<p>Each unit entry is titled with its display name, with its Id shown next to it. Open an entry to see
+its fields. The identity fields show first; the rest are grouped:</p>
+<div class="table-wrap"><table><thead><tr><th>Group</th><th>Main fields</th></tr></thead><tbody><tr><td><strong>Identity</strong></td><td><strong>Id</strong>, <strong>Faction</strong>, <strong>Role</strong>, <strong>Display Name</strong>, <strong>Description</strong>. Role describes the unit's job; the AI sends units with the Role <code>Worker</code> to gather.</td></tr><tr><td><strong>Appearance</strong></td><td><strong>Visual Mode</strong> (your own mesh, or a generated placeholder shape), <strong>Skeletal Mesh</strong> or <strong>Static Mesh</strong>, <strong>Portrait</strong>, <strong>Size</strong> (collision radius and height; the art is scaled to fit), <strong>Visual Rotation</strong> and <strong>Visual Offset</strong> (to fix imported meshes that face the wrong way or sit too high), and how long the body stays after death.</td></tr><tr><td><strong>Animation</strong></td><td><strong>Anim Set</strong> (the unit's clips), <strong>Animation Mode</strong> (<strong>Direct Anim Set (No Anim Blueprint)</strong> or <strong>Custom Animation Blueprint</strong>) and the <strong>Animation Blueprint Class</strong> for the custom mode.</td></tr><tr><td><strong>Stats</strong></td><td><strong>Maximum Health</strong>, <strong>Armor</strong>, <strong>Unit Size</strong>, <strong>Move Speed</strong>, <strong>Acceleration</strong> (how quickly it reaches full speed and stops), <strong>Turn Rate</strong> (degrees per second; 0 faces the direction of travel at once), <strong>Is Air Unit</strong>, <strong>Interaction Reach</strong> (how close the unit gets to gather, build or repair) and starting gameplay tags.</td></tr><tr><td><strong>Combat</strong></td><td><strong>Attacks</strong> (one entry per weapon: damage, range, cooldown, projectile, splash, and whether it hits ground, air or both), the <strong>Weapon</strong>, <strong>Armor</strong> and <strong>Shield Upgrade</strong> research lines it benefits from, shields, <strong>Stances</strong> (for example a siege mode), <strong>Starting Stance</strong>, and <strong>Worker Fights Back</strong>.</td></tr><tr><td><strong>Economy</strong></td><td><strong>Gathers</strong> (which resources it collects, how much per trip, how fast), <strong>Can Repair</strong> and the repair rate and cost.</td></tr><tr><td><strong>Production</strong></td><td>Training cost, whether it is paid up front or over time, <strong>Production Time</strong>, <strong>Supply Cost</strong> and <strong>Required Buildings</strong>.</td></tr><tr><td><strong>Construction</strong></td><td><strong>Can Build</strong> and the list of buildings it can construct.</td></tr><tr><td><strong>Abilities</strong></td><td>An energy pool and spells such as healing or area damage. Each ability gets a command card button.</td></tr><tr><td><strong>Blueprint</strong></td><td><strong>Custom Blueprint</strong> and <strong>Replace With Class</strong>. See <a href="CONTENT_SET_GUIDE.html#add-blueprint-logic-to-a-unit-or-building">Add Blueprint logic</a>.</td></tr></tbody></table></div>
+<p><strong>Worker Fights Back</strong> controls what a gathering unit does when it or a nearby ally is attacked.
+Off (the StarCraft behavior) keeps workers mining until you order them to fight. On makes them
+fight back and then return to mining once the attacker is dead or has run farther than the worker
+will chase (<strong>Gameplay Defaults &gt; Attack Chase Radius</strong>). Soldiers always fight back.</p>
+<h3 id="add-a-unit">Add a unit</h3>
+<ol><li>In <strong>Units</strong>, choose the <strong>+</strong> button to add an entry. Give it an <strong>Id</strong> such as <code>Scout</code> and a
+<strong>Display Name</strong>.</li><li>Set its <strong>Faction</strong> to the same faction as the building that will train it, then its <strong>Stats</strong>
+and <strong>Attacks</strong>.</li><li>Leave <strong>Visual Mode</strong> on <strong>Use Greybox Primitive</strong> to get a placeholder shape, or assign a mesh.</li><li>Set its training <strong>Production</strong> cost and time.</li><li>Open the building that should train it and add the unit to that building's <strong>Trains Units</strong>.</li><li>Choose <strong>Generate Game</strong>, then <strong>Play</strong>.</li></ol>
+<p>A unit that no building trains, and that is not the starting worker, never appears in a match.
+<strong>Check for Problems</strong> reports an error when a <strong>Trains Units</strong>, <strong>Can Build</strong> or
+<strong>Required Buildings</strong> entry names an Id that does not exist.</p>
+<h2 id="buildings">Buildings</h2>
+<p>Building entries work the same way. The groups that differ from units:</p>
+<div class="table-wrap"><table><thead><tr><th>Group</th><th>Main fields</th></tr></thead><tbody><tr><td><strong>Identity</strong></td><td><strong>Role</strong>: what the building does for the player and the AI. <strong>Townhall</strong> is the main base, <strong>Supply</strong> raises the supply cap, <strong>Production</strong> trains units, <strong>Tech</strong> unlocks things, <strong>Extractor</strong> sits on a resource node, <strong>Resource Depot</strong> accepts returned resources, <strong>Tower</strong> defends.</td></tr><tr><td><strong>Appearance</strong></td><td><strong>Static Mesh</strong>, <strong>Portrait</strong> and <strong>Footprint</strong>: the size on the ground used for collision, placement and pathing. <strong>Reach Margin</strong> lets workers gather, drop off, build or repair from a little further away, which helps with large buildings such as a town hall.</td></tr><tr><td><strong>Stats</strong></td><td><strong>Maximum Health</strong>, <strong>Armor</strong>, <strong>Supply Provided</strong>.</td></tr><tr><td><strong>Combat</strong></td><td><strong>Attacks</strong> for a defensive building. A building with attacks shoots enemies in range by itself.</td></tr><tr><td><strong>Construction</strong></td><td>Cost, <strong>Construction Time</strong>, grid size and <strong>Required Buildings</strong>.</td></tr><tr><td><strong>Production</strong></td><td><strong>Trains Units</strong> and <strong>Research Options</strong> (upgrades such as weapon and armor levels, with cost, time, number of levels and requirements).</td></tr><tr><td><strong>Economy</strong></td><td><strong>Accepts Resources</strong> (makes it a drop-off point), <strong>Extracts Resource</strong> (makes it an extractor, like a refinery on a gas geyser) and extractor settings.</td></tr></tbody></table></div>
+<p>A worker can build a building when the worker has <strong>Can Build</strong> turned on and either lists the
+building under <strong>Can Build</strong> or leaves that list empty (which allows every building of its faction).</p>
+<h3 id="tech-requirements">Tech requirements</h3>
+<p>Use <strong>Required Buildings</strong> on units, buildings and research options to build a tech tree. For
+example, give the Factory the Barracks as a required building, and it stays locked on the command
+card until the player owns a finished Barracks. Research options can also require other research
+levels and a specific building for a specific level.</p>
+<p>To make a unit stronger with research, add a research option to a building (its <strong>Id</strong> is the
+research line, for example <code>InfantryWeapons</code>), then pick that line as the unit's
+<strong>Weapon Upgrade</strong>, <strong>Armor Upgrade</strong> or <strong>Shield Upgrade</strong>.</p>
+<h2 id="resources-and-resource-sources">Resources and resource sources</h2>
+<ul><li><strong>Resources</strong> define what players collect and spend: <strong>Id</strong>, <strong>Display Name</strong>, HUD <strong>Icon</strong> and
+<strong>Color</strong>, and <strong>Starting Amount</strong>.</li><li><strong>Resource Sources</strong> define the nodes on the map: which resource they give, their mesh and
+<strong>Size</strong>, <strong>Maximum Resources</strong>, how many workers can gather at once, and whether a building
+must be built on top first (<strong>Requires Extractor</strong>, like a gas geyser).</li></ul>
+<p>Costs everywhere else refer to resources by Id.</p>
+<h2 id="match-setup-factions-bases-and-the-map">Match Setup: factions, bases and the map</h2>
+<p><strong>Match Setup</strong> controls the map and match that Generate creates. Its groups:</p>
+<ul><li><strong>Map.</strong> <strong>Generate Map</strong> must be on for Generate to create a map, game mode and match
+settings. <strong>Num Players</strong> (bases on the map, human and AI together), <strong>Maximum Participants</strong>,
+<strong>Playable Half Extent</strong> (half the map width in cm; 6000 makes a 120 m square map) and
+<strong>Arena Preset</strong> (<strong>Open Arena</strong>, a flat map with bases in a circle, or <strong>Twin Crossings</strong>, a
+two-player map with two routes around a central obstacle. Twin Crossings needs 2 players, a
+<strong>Maximum Participants</strong> of 2 and a <strong>Playable Half Extent</strong> of 6000 cm).</li><li><strong>Players.</strong> <strong>Factions</strong> (see below), <strong>Require Player Setup</strong> (show the setup screen before
+the match; needs at least one faction), <strong>Default AI Difficulty</strong> (preselected on the setup
+screen: <strong>Passive</strong>, <strong>Easy</strong> or <strong>Normal</strong>; the default is <strong>Easy</strong>), <strong>Human Controls First Base</strong>
+(turn off to watch AI players fight each other) and <strong>Minimum Human Players to Start</strong> for
+multiplayer.</li><li><strong>Starting Bases.</strong> <strong>Starting Building</strong>, <strong>Starting Worker</strong>, <strong>Starting Workers Per Base</strong>, the
+<strong>Resource Node</strong> placed at every base, and an optional <strong>Second Resource Node</strong> (such as a gas
+geyser) with how many to place per base and per expansion.</li><li><strong>Advanced.</strong> <strong>Initial Simulation Speed</strong>. Keep it at 1 for normal play.</li></ul>
+<h3 id="factions">Factions</h3>
+<p>Each faction has an <strong>Id</strong>, <strong>Display Name</strong>, <strong>Description</strong> and <strong>Crest</strong> shown on the setup
+screen, plus its own <strong>Starting Building</strong> and <strong>Starting Worker</strong>. Units and buildings join a
+faction through their <strong>Faction</strong> field. Workers build only buildings of their own faction, and
+buildings train only units of their own faction. Leave <strong>Factions</strong> empty for a single-faction game
+that uses the starting building and worker from <strong>Starting Bases</strong>.</p>
+<h2 id="what-generate-creates">What Generate creates</h2>
+<p>Generate writes into the folders set under <strong>Advanced</strong> (<strong>Generated Content Root</strong> and
+<strong>Output Paths</strong>). For the installed starter game that is <code>/Game/RTSStarterGame/Generated</code>:</p>
+<div class="table-wrap"><table><thead><tr><th>Folder</th><th>Assets</th></tr></thead><tbody><tr><td><code>Units</code></td><td><code>BP_&lt;Id&gt;</code> for every unit, such as <code>BP_Worker</code>.</td></tr><tr><td><code>Buildings</code></td><td><code>BP_&lt;Id&gt;</code> for every building, such as <code>BP_Barracks</code>.</td></tr><tr><td><code>Resources</code></td><td><code>BP_Res_&lt;Id&gt;</code> for every resource and <code>BP_Src_&lt;Id&gt;</code> for every resource source.</td></tr><tr><td><code>Maps</code></td><td><code>L_&lt;ContentSetId&gt;_Starter</code> (the map), <code>BP_GM_&lt;ContentSetId&gt;_Starter</code> (its game mode) and <code>DA_Skirmish_&lt;ContentSetId&gt;</code> (its match settings).</td></tr><tr><td>(root)</td><td><code>DA_RTSGenerationManifest_&lt;ContentSetId&gt;</code>, the record of which assets Generate owns.</td></tr></tbody></table></div>
+<p>Everything in these folders belongs to Generate. <strong>Generate rebuilds these assets from the
+Content Set and replaces any change you make to them directly.</strong> When you open a generated
+Blueprint, a notification says so and offers <strong>Create Custom Blueprint</strong> or
+<strong>Open Custom Blueprint</strong>, <strong>Open Content Set</strong> and <strong>Dismiss</strong>. If you did edit a generated unit or
+building Blueprint, Generate lists it and asks <strong>Replace edited Blueprints?</strong> before going ahead.</p>
+<p>Do not save your own assets inside the generated folders. Generate stops with an error when it
+finds an asset there that it did not create.</p>
+<h2 id="add-blueprint-logic-to-a-unit-or-building">Add Blueprint logic to a unit or building</h2>
+<p>To give a unit or building its own graphs, variables or components, use a <strong>Custom Blueprint</strong>:</p>
+<ol><li>Generate the game at least once.</li><li>Open the unit or building in the Content Set, expand its <strong>Blueprint</strong> group and choose
+<strong>Create Custom Blueprint</strong> (the row is labelled <strong>Your Blueprint</strong>). You can also choose it
+from the notification that appears when you open the generated Blueprint.</li><li>The plugin creates <code>&lt;Content Set folder&gt;/Custom/BP_&lt;Id&gt;_Custom</code>, a child of the generated
+<code>BP_&lt;Id&gt;</code>, sets it as the entry's <strong>Custom Blueprint</strong>, saves both, and opens it. For the
+installed starter game the worker's is <code>/Game/RTSStarterGame/Custom/BP_Worker_Custom</code>.</li><li>Its Event Graph starts with example events wired to a <strong>Print String</strong>: <strong>On Killed</strong> for every
+unit and building, and <strong>On Production Finished</strong> for buildings that train units. Replace them
+with your logic or delete them.</li><li>Generate never overwrites your Custom Blueprint, and players get it everywhere the unit or
+building appears: training, construction and starting bases. Every value in the Content Set
+still applies to it, because it inherits from the generated Blueprint.</li></ol>
+<p>Once a Custom Blueprint exists, the button reads <strong>Open Custom Blueprint</strong>.
+<a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint Quick Reference</a> shows how to react to death, training,
+selection and other events there.</p>
+<p><strong>Replace With Class</strong> is for advanced cases: it replaces the unit or building with a class you
+built entirely yourself, in Blueprint or C++. Generate then stops creating <code>BP_&lt;Id&gt;</code> for that
+entry, and the entry's stats no longer apply. Your class must contain the RTS components the
+entry's abilities need; <strong>Check for Problems</strong> lists any that are missing. Set only one of
+<strong>Custom Blueprint</strong> and <strong>Replace With Class</strong>. See <a href="EXTENSION_GUIDE.html">Extending with C++</a>.</p>
+<h2 id="use-your-own-models">Use your own models</h2>
+<p>Gameplay size comes from the Content Set (a unit's <strong>Size</strong>, a building's <strong>Footprint</strong>), not from
+the mesh. Swapping art never changes pathing, selection, placement or ranges.</p>
+<ul><li><strong>Static meshes.</strong> Set the entry's <strong>Visual Mode</strong> to <strong>Use Assigned Art</strong> and pick a
+<strong>Static Mesh</strong>. This works for units, buildings and resource sources.</li><li><strong>Animated characters.</strong> Right-click the Content Set and choose <strong>Use My Model for a Unit...</strong>.
+Pick the unit and a <strong>Skeletal Mesh</strong>, then either pick an existing <strong>RTS Anim Set</strong> or choose
+<strong>Create Anim Set from My Clips...</strong> to map your Idle, Walk and optional Run, attack, gather,
+build, death and hit clips. Choose <strong>Direct Anim Set (No Anim Blueprint)</strong> for the simplest setup,
+or <strong>Custom Animation Blueprint</strong> to use your own Animation Blueprint. Choose
+<strong>Apply Presentation</strong>, then <strong>Generate Game</strong>.</li><li><strong>Unreal's Manny.</strong> In a project made from the Third Person template (or with its Characters
+content added), right-click the Content Set and choose <strong>Use Unreal's Manny for Units</strong>.</li></ul>
+<p>Details, clip requirements and animation events are in
+<a href="MULTIRIG_ANIM.html">Vendor-Neutral Skeletal Animation</a>.</p>
+<h2 id="other-assets-you-can-create">Other assets you can create</h2>
+<p>The <strong>+ Add &gt; Gameplay</strong> menu lists these in its <strong>RTS</strong> section:</p>
+<div class="table-wrap"><table><thead><tr><th>Asset</th><th>Use it for</th></tr></thead><tbody><tr><td><strong>RTS Content Set</strong></td><td>A game or ruleset.</td></tr><tr><td><strong>RTS Anim Set</strong></td><td>Walk, run, attack and other clips for one skeleton. Assign it to a unit together with that unit's mesh.</td></tr><tr><td><strong>RTS HUD Style</strong></td><td>Colors, fonts, sizes and sounds for the in-game HUD. Select it in <strong>Project Settings &gt; Game &gt; RTS HUD Style</strong>. See <a href="UI_DATA_API.html">UI Data API</a>.</td></tr><tr><td><strong>RTS Command Card Layout</strong></td><td>Which button goes in which slot of the command card, and its hotkey.</td></tr><tr><td><strong>RTS Skirmish Definition</strong></td><td>Match rules for a map you made by hand: bases, starting workers, factions and AI. Generated maps get one automatically.</td></tr></tbody></table></div>
+<h2 id="start-over">Start over</h2>
+<p><strong>Advanced &gt; Reset to Starter Game...</strong> replaces every unit, building, resource and setting in this
+Content Set with the starter game's. It asks first. It keeps the Content Set's name, Id, output
+folders and Custom Blueprints. You can undo it with <strong>Edit &gt; Undo</strong> until you close the editor; once
+you save and close, it cannot be undone. It is not available on the plugin's read-only sample.</p>
+<h2 id="automate-from-the-command-line">Automate from the command line</h2>
+<p>Build machines can check and generate a Content Set without opening the editor:</p>
+<pre><code class="language-text">UnrealEditor-Cmd MyProject.uproject -run=RTSValidateContentSet -ContentSet=/Game/MyRTS/DA_MyRTS
+UnrealEditor-Cmd MyProject.uproject -run=RTSGenerateContentSet -ContentSet=/Game/MyRTS/DA_MyRTS</code></pre>
+<p>Add <code>-Fix</code> to <code>RTSValidateContentSet</code> to apply the same fixes as <strong>Fix Simple Problems</strong>, and
+<code>-SaveFixes</code> to save them. Both commands return a non-zero exit code on failure. More options are
+listed in <a href="STARTER_RULESET.html#command-line-and-c-workflow">Starter Game and Generated Content</a>.
+Editor Utility Blueprints can call the same functions from the <strong>RTS|Authoring</strong> node category.</p>
+</main>
+<footer>Real-Time Strategy plugin 1.3.0. This page is generated from <code>Docs/CONTENT_SET_GUIDE.md</code>.</footer>
+</body>
+</html>

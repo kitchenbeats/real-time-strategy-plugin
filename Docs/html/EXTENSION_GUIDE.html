@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extending with C++ — Real-Time Strategy</title>
+<style>
+:root { color-scheme: light dark; --bg: #fbfbfa; --fg: #1d1f23; --muted: #5d6470; --line: #d9dce1;
+  --panel: #f0f1f3; --accent: #1f6fb2; --code-bg: #eef0f3; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16181c; --fg: #e4e6ea; --muted: #a3a9b3; --line: #343841; --panel: #1f2227;
+    --accent: #6cb4f0; --code-bg: #24282e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+header { border-bottom: 1px solid var(--line); background: var(--panel); }
+header .bar { max-width: 980px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap;
+  gap: 6px 18px; align-items: baseline; }
+header .brand { font-weight: 700; color: var(--fg); text-decoration: none; margin-right: 8px; }
+header nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+header nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+header nav a:hover, header nav a.current { color: var(--accent); }
+main { max-width: 980px; margin: 0 auto; padding: 8px 20px 48px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; }
+h1 { font-size: 2em; margin-top: 0.8em; }
+h2 { font-size: 1.45em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.15em; }
+a { color: var(--accent); }
+p, ul, ol, table, pre, blockquote { margin: 0 0 1em; }
+li { margin: 0.2em 0; }
+li > ul, li > ol { margin: 0.2em 0 0.2em; }
+code { font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; padding: 0; overflow-wrap: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+blockquote { border-left: 4px solid var(--line); padding: 0 14px; color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+footer { max-width: 980px; margin: 0 auto; padding: 16px 20px 32px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="index.html">Real-Time Strategy</a><nav><a href="index.html">Home</a><a href="INSTALL_QUICKSTART.html">Getting Started</a><a href="CONTENT_SET_GUIDE.html">Content Set</a><a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint</a><a href="EXTENSION_GUIDE.html" class="current">C++</a><a href="PACKAGING.html">Packaging</a><a href="TROUBLESHOOTING.html">Troubleshooting</a></nav></div></header>
+<main>
+<h1 id="extending-with-c">Extending with C++</h1>
+<p>This guide is for programmers who want to add game code in C++. You never need to edit the
+plugin's source: every system below is extended from your own game module. Blueprint and C++ use
+the same classes and rules, so you can mix them freely. For Blueprint-only work, start with the
+<a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint Quick Reference</a>.</p>
+<h2 id="set-up-your-module">Set up your module</h2>
+<p>Add the runtime module to your game module's <code>.Build.cs</code>:</p>
+<pre><code class="language-csharp">PublicDependencyModuleNames.Add("RealTimeStrategy");</code></pre>
+<ul><li>Add <code>RealTimeStrategyExamples</code> only if you derive from or include the example classes.</li><li><code>RealTimeStrategyEditor</code> is an editor-only module. Depend on it only from an editor module of your
+own, for example to call Content Set functions from an editor tool.</li><li>Include the header for each class you use, by its folder path, for example
+<code>#include "Combat/RTSHealthComponent.h"</code>. <a href="CPP_API_SURFACE.html">C++ API Surface</a> lists the
+supported headers by area.</li></ul>
+<p>Keep your classes in your project's <code>Source</code> folder. Do not copy plugin classes into your project or
+change plugin files: updates replace them.</p>
+<h2 id="how-the-pieces-fit">How the pieces fit</h2>
+<ul><li><strong>The Content Set is the source of truth for game data.</strong> Units, buildings, resources, costs and
+tech requirements are data. <strong>Generate Game</strong> turns them into Blueprints (<code>BP_&lt;Id&gt;</code>), a map and a
+game mode. See <a href="CONTENT_SET_GUIDE.html">The Content Set</a>.</li><li><strong>Units and buildings are ordinary actors with RTS components.</strong> A unit is an <code>ACharacter</code>, a
+building an <code>APawn</code>. Health, ownership, attacks, gathering, construction and production are
+components such as <code>URTSHealthComponent</code>, <code>URTSOwnerComponent</code> and <code>URTSProductionComponent</code>.</li><li><strong>The server decides.</strong> Gameplay changes happen on the server. Clients send requests through
+their <code>ARTSPlayerController</code>, and results replicate back.</li></ul>
+<h2 id="choose-how-to-add-your-code">Choose how to add your code</h2>
+<div class="table-wrap"><table><thead><tr><th>Goal</th><th>C++ approach</th><th>Details</th></tr></thead><tbody><tr><td>React to deaths, training, construction or resources</td><td>Bind the component delegates (see below).</td><td><a href="BLUEPRINT_QUICK_REFERENCE.html#events">Blueprint Quick Reference</a> lists the events.</td></tr><tr><td>Your own unit or building class</td><td>Derive from <code>ACharacter</code> or <code>APawn</code>, add the RTS components, and set it as the entry's <strong>Replace With Class</strong> in the Content Set.</td><td><a href="STARTER_RULESET.html#command-line-and-c-workflow">Starter Game and Generated Content</a></td></tr><tr><td>A new resource or resource node</td><td>Derive from <code>URTSResourceType</code>, or build a node actor with <code>URTSResourceSourceComponent</code>, and set it as <strong>Replace With Class</strong> on the resource or resource source.</td><td><a href="ECONOMY.html">Economy</a></td></tr><tr><td>A new command</td><td>Derive from <code>URTSOrder</code> and override <code>CanObeyOrder_Implementation</code>, <code>IsValidTarget_Implementation</code>, <code>IssueOrder_Implementation</code> and <code>GetDescription_Implementation</code>.</td><td><a href="ORDERS.html">Orders</a></td></tr><tr><td>A new ability rule</td><td>Derive from <code>URTSAbilityComponent</code> and override its readiness, target or effect functions.</td><td><a href="COMBAT_NETWORKING.html">Combat and Networking</a></td></tr><tr><td>AI strategy</td><td>Derive from <code>ARTSPlayerAIController</code>. Override <code>ExecuteStrategyThink_Implementation</code> to add decisions; also return false from <code>ShouldUseBuiltInStrategy_Implementation</code> to replace the built-in strategy entirely.</td><td><a href="AI_MATCH_POLICIES.html">AI and Match Policies</a></td></tr><tr><td>Win conditions</td><td>Derive a game mode from <code>ARTSSkirmishGameMode</code> (or <code>ARTSGameMode</code>) and call <code>EliminatePlayer</code> or <code>CommitMatchResult</code> on the server.</td><td><a href="AI_MATCH_POLICIES.html#c-win-conditions">AI and Match Policies</a>, <a href="MATCH_STATE.html">Match State</a></td></tr><tr><td>HUD panels</td><td>Derive from <code>ARTSHUD</code> or the bundled widgets, or bind the delegates from your own widgets.</td><td><a href="UI_DATA_API.html">UI Data API</a></td></tr></tbody></table></div>
+<p>Most classes offer small <code>BlueprintNativeEvent</code> hooks (functions ending in <code>_Implementation</code> in
+C++). Override the hook, and call <code>Super::</code> to keep the plugin's behavior and add to it. Skip the
+<code>Super::</code> call only where a guide says the hook is a complete replacement.</p>
+<h2 id="react-to-gameplay-events">React to gameplay events</h2>
+<p>Components expose Blueprint-assignable delegates. Bind them with <code>AddDynamic</code> to a <code>UFUNCTION</code>:</p>
+<pre><code class="language-cpp">// MyGameMode.h
+UFUNCTION()
+void HandleProductionFinished(AActor* Building, AActor* Product, int32 QueueIndex);
+
+// MyGameMode.cpp
+#include "Production/RTSProductionComponent.h"
+
+void AMyGameMode::WatchBuilding(AActor* Building)
+{
+    if (URTSProductionComponent* Production = Building-&gt;FindComponentByClass&lt;URTSProductionComponent&gt;())
+    {
+        Production-&gt;OnProductionFinished.AddDynamic(this, &amp;AMyGameMode::HandleProductionFinished);
+    }
+}</code></pre>
+<p><code>URTSHealthComponent</code> also has a C++-only delegate, <code>OnKilledNative</code>, that you can bind without a
+<code>UFUNCTION</code>. It fires just before the Blueprint <strong>On Killed</strong> event, on the server and again on
+clients when the death replicates:</p>
+<pre><code class="language-cpp">#include "Combat/RTSHealthComponent.h"
+
+void AMyGameMode::WatchUnit(AActor* Unit)
+{
+    if (URTSHealthComponent* Health = Unit-&gt;FindComponentByClass&lt;URTSHealthComponent&gt;())
+    {
+        Health-&gt;OnKilledNative.AddUObject(this, &amp;AMyGameMode::HandleUnitKilled);
+    }
+}
+
+void AMyGameMode::HandleUnitKilled(AActor* Unit, AController* PreviousOwner, AActor* DamageCauser)
+{
+    if (!HasAuthority())
+    {
+        return; // Clients receive the death too; only the server changes gameplay.
+    }
+    // Unit may be destroyed later this frame: do not keep the pointer.
+}</code></pre>
+<p>Remove your bindings when your object is destroyed (in <code>EndPlay</code> or <code>Deinitialize</code>) if the
+component can outlive it. <code>ARTSExampleObjectiveGameMode</code> in the examples module shows the complete
+pattern: it binds <code>OnKilledNative</code> for each registered objective, unbinds in <code>EndPlay</code>, and
+eliminates the objective's owner when it dies.</p>
+<p>To find units as they appear, use the standard <code>UWorld::AddOnActorSpawnedHandler</code>, or bind
+<code>OnProductionFinished</code> on the buildings that train them.</p>
+<h2 id="replace-a-generated-unit-with-your-own-class">Replace a generated unit with your own class</h2>
+<p>Set a unit's <strong>Replace With Class</strong> (in its <strong>Blueprint</strong> group in the Content Set) to your
+<code>ACharacter</code> subclass, or a building's to your <code>APawn</code> subclass. Generate then stops creating
+<code>BP_&lt;Id&gt;</code> for that entry and uses your class everywhere instead: training, construction and
+starting bases.</p>
+<p>Your class is then responsible for its own components and values: its mesh, stats, weapons, costs,
+and what it gathers, builds or trains. The Content Set entry keeps only its Id, faction and role,
+and the match setup's references to it. Your class needs every RTS component that the entry's
+settings imply, for example <code>URTSGathererComponent</code> for a unit that gathers, or
+<code>URTSProductionComponent</code> for a building that trains units, and a builder or production building
+must already list the classes it builds or trains. <strong>Check for Problems</strong> lists every missing
+component. Generate never changes your class. <code>ARTSExampleBuilderUnit</code> and <code>ARTSExampleFieldDepot</code> in the examples module are
+complete, working examples of a hand-made unit and building.</p>
+<p>If you only want to add logic to a generated unit, use a Blueprint <strong>Custom Blueprint</strong> instead.
+It keeps all Content Set values. Generated unit Blueprints derive directly from <code>ACharacter</code> and
+building Blueprints from <code>APawn</code>; there is no setting that gives them your own C++ parent class.</p>
+<h2 id="rules-that-keep-your-code-safe-in-multiplayer">Rules that keep your code safe in multiplayer</h2>
+<ul><li><strong>Change gameplay only on the server.</strong> Check <code>HasAuthority()</code> before calling functions marked
+<code>BlueprintAuthorityOnly</code>, and never trust values a client sends: re-check ownership, cost, range,
+cooldown and visibility on the server right before you change anything.</li><li><strong>Send player commands through the player controller.</strong> Use the <code>ARTSPlayerController::Issue...</code>
+functions (for example <code>IssueMoveOrder</code> or <code>IssueProductionOrder</code>). For a custom order on the
+current selection, call <code>GetOrderSubmission()-&gt;IssueOrderToSelectedActors(Order)</code>. A <code>true</code> result
+means the request was sent, not that it succeeded.</li><li><strong>Use the plugin's functions to change state.</strong> Pay with <code>URTSPlayerResourcesComponent::PayResources</code>,
+change owners with <code>ARTSGameMode::TransferOwnership</code>, end the match with <code>CommitMatchResult</code>.
+Editing fields directly skips validation, replication and events.</li><li><strong>Treat events as notifications.</strong> Delegates report changes that already happened. Do not use
+them to authorize another change, and do not start the same transaction again from its own event.</li><li><strong>Hold actors weakly.</strong> Keep references to units and buildings in <code>TWeakObjectPtr</code> or <code>UPROPERTY</code>
+fields, and check them before use. Units die and are destroyed at any time.</li><li><strong>Stay on the game thread.</strong> Plugin objects are not thread-safe. Worker threads may process copied
+values only, then return to the game thread to apply the result.</li></ul>
+<p><a href="CPP_EXTENSION_CONTRACT.html">C++ Extension Rules</a> explains each rule with examples.
+<a href="NETWORK_SECURITY.html">Network Security</a> covers fog of war and what clients may see.</p>
+<h2 id="aircraft">Aircraft</h2>
+<p>The built-in <strong>Move</strong>, <strong>Attack Move</strong>, <strong>Patrol</strong> and <strong>Attack</strong> orders fly air units: characters
+with a <code>URTSAirUnitComponent</code>, which switches them to the <code>MOVE_Flying</code> movement mode. Generate
+adds this component to units that have <strong>Is Air Unit</strong> set in the Content Set. Generated units use their <strong>Move Speed</strong> as their flying speed; a class
+set through <strong>Replace With Class</strong> must set its own movement speeds.</p>
+<p>Aircraft keep their starting cruise height and route around obstacles by climbing over, crossing or
+descending past them, with collision on. Nearby aircraft keep apart using their own 3D separation,
+not Unreal's ground avoidance. An attack still needs a weapon that can hit the target's domain and
+reach it in 3D. This is not general 3D navigation for enclosed levels: if no safe route exists, the
+order fails.</p>
+<p>Flight temporarily uses its own path follower when the controller has Unreal's standard
+<code>UPathFollowingComponent</code>, and restores it afterwards. If your controller uses a custom path
+follower, the built-in flight does not replace it and reports that it cannot fly the route; your
+controller then needs its own flight movement. Custom order classes also need their own movement
+code for aircraft. Test aircraft on your real maps and in a packaged multiplayer build.</p>
+<h2 id="before-you-ship-an-extension">Before you ship an extension</h2>
+<ol><li>Compile your project in Development and Shipping.</li><li>Choose <strong>Check for Problems</strong> on your Content Set and fix every error.</li><li>Play the generated map, then test the same behavior in a packaged build, with a second player
+if your game has multiplayer.</li></ol>
+<p>See <a href="EXAMPLES.html">Blueprint and C++ Examples</a> for small working examples of every extension type,
+and <a href="PUBLIC_API_CHANGE_POLICY.html">API Change Policy</a> for how the C++ API may change between
+versions.</p>
+</main>
+<footer>Real-Time Strategy plugin 1.3.0. This page is generated from <code>Docs/EXTENSION_GUIDE.md</code>.</footer>
+</body>
+</html>

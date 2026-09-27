@@ -98,11 +98,12 @@ CI (exit codes). This document defines their shared runtime contract.
      rich-idle candidate across the complete run, including recovered candidates.
    - `TeleportDetector` — any pawn displaced farther than MaxSpeed × window (the builder-teleport class)
    - `WorkerSlaughter` — a roster with draft-capable workers suffers repeated worker deaths at
-     home without a new draft event. The shared strategic-collapse policy defers this alarm while
-     a materially superior hostile force occupies the remaining infrastructure. Casualty counts
-     and the unanswered run survive deferral; polling reevaluates the pending failure when the
-     occupation clears, even without another death. The verdict's per-player `workerDefenseWatch`
-     records the unanswered count, current deferral, observation count, and last classified local
+     home without a new draft event. Each death is judged when it happens, with the shared
+     strategic-collapse policy: a worker lost while a materially superior hostile force occupies
+     the player's buildings had no defense to join, so that death does not extend the unanswered
+     run, and the attackers leaving later does not turn it into one. The verdict's per-player
+     `workerDefenseWatch` records the unanswered count (`deathsSinceLastNewDraft`), the deaths
+     during an occupied collapse (`deathsDuringOccupiedCollapse`), and the last classified local
      hostile/global friendly strength. This measures draft-event progress, not whether every
      casualty could have been saved. Unarmed worker deaths remain in telemetry without arming it.
    - `StuckStorm` — no-progress order voids past threshold/min
@@ -110,6 +111,21 @@ CI (exit codes). This document defines their shared runtime contract.
      length × repeats ÷ speed) plus any performance sample and 15 minutes, or
      `-RTSMatchCheckWallLimit=<seconds>`. The harness also keeps judging while the world is paused,
      since a finished match pauses it.
+
+### Match screenshots
+
+`-RTSMatchShots=<seconds>` saves frames of a rendered match to look at afterwards; it works with
+or without `-RTSMatchCheck`. At that interval of game time it points the local player's camera at
+the busiest place on the map and saves a frame there, to `-RTSMatchShotsOutput=<directory>`
+(default `Saved/Diagnostics/MatchShots`), named `match_<shot>_<game seconds>s.png`. Each living
+unit proposes a view of everything within 1,200 cm of it. A view scores one point per moving unit,
+plus three points per unit when opposing sides share it, so fights win over traffic. Every second
+shot looks at the busiest view at least 3,000 cm from the busiest one, so one fight does not hide
+the rest of the map. Each shot logs its view under `[MatchShots]`, followed by every pair of
+units in it standing inside each other (closer than half their radii sum), with whether they are
+friends or enemies and each unit's order and speed; harvesters passing through each other on the
+mineral line are expected there. Add `r.MotionBlurQuality 0` for sharp frames and the `NoFog` cheat
+(`-ExecCmds=...,NoFog`) to see enemy units. The flag does nothing without rendering (`-NullRHI`).
 
 ## Movement benchmark
 

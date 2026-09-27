@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnostics — Real-Time Strategy</title>
+<style>
+:root { color-scheme: light dark; --bg: #fbfbfa; --fg: #1d1f23; --muted: #5d6470; --line: #d9dce1;
+  --panel: #f0f1f3; --accent: #1f6fb2; --code-bg: #eef0f3; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16181c; --fg: #e4e6ea; --muted: #a3a9b3; --line: #343841; --panel: #1f2227;
+    --accent: #6cb4f0; --code-bg: #24282e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+header { border-bottom: 1px solid var(--line); background: var(--panel); }
+header .bar { max-width: 980px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap;
+  gap: 6px 18px; align-items: baseline; }
+header .brand { font-weight: 700; color: var(--fg); text-decoration: none; margin-right: 8px; }
+header nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+header nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+header nav a:hover, header nav a.current { color: var(--accent); }
+main { max-width: 980px; margin: 0 auto; padding: 8px 20px 48px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; }
+h1 { font-size: 2em; margin-top: 0.8em; }
+h2 { font-size: 1.45em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.15em; }
+a { color: var(--accent); }
+p, ul, ol, table, pre, blockquote { margin: 0 0 1em; }
+li { margin: 0.2em 0; }
+li > ul, li > ol { margin: 0.2em 0 0.2em; }
+code { font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; padding: 0; overflow-wrap: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+blockquote { border-left: 4px solid var(--line); padding: 0 14px; color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+footer { max-width: 980px; margin: 0 auto; padding: 16px 20px 32px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="index.html">Real-Time Strategy</a><nav><a href="index.html">Home</a><a href="INSTALL_QUICKSTART.html">Getting Started</a><a href="CONTENT_SET_GUIDE.html">Content Set</a><a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint</a><a href="EXTENSION_GUIDE.html">C++</a><a href="PACKAGING.html">Packaging</a><a href="TROUBLESHOOTING.html">Troubleshooting</a></nav></div></header>
+<main>
+<h1 id="diagnostics">Diagnostics</h1>
+<p>A diagnostic match has three consumers; each needs its own output:
+dev watching live (overlay), agent/tooling iterating (structured events + verdicts),
+CI (exit codes). This document defines their shared runtime contract.</p>
+<h2 id="event-stream-and-developer-diagnostics">Event stream and developer diagnostics</h2>
+<ol><li><strong>JSONL event stream</strong> — <code>Saved/Diagnostics/match_&lt;UTC-timestamp&gt;.jsonl</code>, one object per
+event: <code>{"t": &lt;sim-seconds float&gt;, "type": "&lt;Category.Event&gt;", "player": "&lt;name|null&gt;", "data": {...}}</code>.
+Public API on the diagnostics subsystem: <code>EmitEvent(FName Type, AController* Player, TSharedRef&lt;FJsonObject&gt; Data)</code>
+(no-op unless the stream is enabled: <code>-RTSDiagEvents</code> or <code>rts.diag.events 1</code>).</li><li><strong>Event instrumentation</strong> across gameplay systems (each behind its existing channel):
+<ul><li><code>Economy.Deposit</code> {resource, amount}, <code>Economy.Income</code> (10s rollup) {resource, perMin, bank, workers, saturationPct}</li><li><code>Combat.Engagement</code> {phase: start|end, location, attackers, defenders, armyValueDelta}</li><li><code>Combat.Kill</code> {victimClass, killerClass, victimPlayer, atHomeBase: bool}</li><li><code>AI.BuildOrder</code> {phase: queued|started|completed, class, reason}</li><li><code>AI.Decision</code> {kind: attackLatch|retreat|expand|draftWorkers|declineWorkerDraft|attackTarget, detail}</li><li><code>AI.SquadState</code> {squad, from, to}</li><li><code>Move.Stall</code> {unit, order, secondsStill} · <code>Move.Voided</code> {unit, order}</li></ul></li><li><strong>Dev HUD overlay</strong> (<code>rts.diag.hud 1</code>): per-player scoreboard, squad states, income
+sparklines, live watchdog status.</li></ol>
+<h2 id="match-acceptance">Match acceptance</h2>
+<ol><li><strong>MatchCheck harness</strong>: <code>-RTSMatchCheck=&lt;simSeconds&gt;</code> (optional <code>-RTSMatchCheckSpeed=&lt;x&gt;</code> and
+<code>-RTSMatchCheckRepeats=&lt;count&gt;</code>; add <code>-RTSHumanCheck</code> to require the local human runtime proof
+and <code>-RTSTransactionCheck</code> to require the public customer-transaction proof)
+runs a headless/windowed match, evaluates the watchdogs below, writes
+<code>Saved/Diagnostics/matchcheck_&lt;UTC-milliseconds&gt;_&lt;run-id&gt;_&lt;role&gt;_&lt;pid&gt;.json</code>, logs a
+<code>[MatchCheck]</code> verdict block,
+and exits the process with code 0 (pass) / 1 (alarms). A match becomes a test.
+On a map that waits for its setup screen, add <code>-ExecCmds=rts.skirmish.start</code>; choose the
+opponents with the map's travel options, for example <code>?NumBases=4?AIDifficulty=Easy</code>
+(see STARTER_RULESET.md).
+Packaged automation can pass <code>-RTSMatchCheckOutput=&lt;directory&gt;</code> to select an explicit writable
+verdict directory; relative paths resolve from the project directory and the destination must be
+writable under the platform's application sandbox. For a sandbox-signed packaged macOS app,
+omit the override unless the destination is explicitly container-authorized; the default
+<code>ProjectSavedDir/Diagnostics</code> resolves inside the app container. Failure to create or write the
+verdict raises <code>VerdictWrite</code> and fails the process.
+Add <code>-RTSPerformanceCapture</code> to record fixed-memory wall-frame P50/P95/P99, average/worst
+frame time, &gt;50/&gt;100/&gt;200 ms hitches, one-second sampled actor/pawn/RTS-unit/projectile/component/
+widget/order/production peaks, resident and Unreal-tracked memory, GC timing, sampled network
+rates/backlog, strategic-request work, and scoped replication/fog work counters. Add
+<code>-RTSPerformanceTier=100</code>, <code>500</code>, or <code>1000</code> to
+discover the installed content set's real worker and combat catalogs, establish the tier through
+authoritative gameplay spawns, and replenish battle losses. The 500- and 1,000-unit tiers
+require at least four or eight participant bases. Add
+<code>-RTSPerformanceBudget=Client100|Client500|Client1000|Server500|Server1000</code> to enforce the
+corresponding frame/hitch thresholds after at least ten sampled wall minutes; budget runs must
+explicitly pass <code>-RTSPerformanceSampleSeconds=600</code> or longer. An automatic client budget pass is
+a frame-threshold verdict, not a complete performance test: whoever runs it must also record and
+check resolution, scalability, VSync, fog/presentation, hardware, and the raw captures. Client
+profiles reject dedicated-server and <code>NullRHI</code> runs; server profiles require a dedicated server.
+Qualification invocations may also pass an absolute, previously nonexistent
+<code>-RTSPerformanceCsvOutput=&lt;file&gt;.csv</code> together with a bounded
+<code>-RTSPerformanceScenario=&lt;slug&gt;</code>. MatchCheck then owns the UE CSV Profiler capture, embeds the
+run ID, capture role, unit tier, and scenario as capture-local metadata, waits for asynchronous
+CSV finalization, publishes through a no-replace destination writer, and publishes the verdict
+only after the requested file exists. The release
+runner pairs this with an invocation-bound <code>-tracefile</code> and retains both artifacts. These short
+<code>NullRHI</code> captures prove that profiling evidence can be produced and bound to the functional
+workload; they do not establish a frame-rate, network, retained-memory, or soak claim.
+In networked runs, authority alone creates and replenishes the workload. A transient replicated
+coordinator publishes an immutable run ID, authoritative tier count, warm-up/sample durations,
+and future server-world capture epoch; remote clients synchronize capture without spawning actors or requiring hidden
+enemy actors to replicate. The 60-second warm-up cannot be reduced for a budget verdict.
+The configurable 60-second wall-clock warm-up is unaffected by simulation speed. This is
+foundational telemetry, not performance evidence: measure your packaged game on your target
+hardware with your own scenarios.
+A synchronized sample run remains active through its declared wall-clock end even if the match
+result arrives earlier. Other runs finish on a committed result because post-match AI
+intentionally stands down; repeat mode calls <code>ResetSkirmish</code> and requires multiple complete matches in the
+same process. A timeout without a committed result is a failure. The verdict records each match.
+Human mode requires a non-observer local controller and proves ownership, camera, HUD, the
+bundled Enhanced Input mapping and real camera movement, local team vision, public selection,
+a gather order, and real resource pickup proven by source depletion or worker cargo increase once
+per required match.
+Transaction mode discovers the local player's owned catalogs rather than assuming starter class
+names. It proves occupied placement rejection; construction order, payment, completion,
+cancellation, and refund; production order, payment, cancellation, and refund; targeted rally,
+spawning, movement, real supply consumption, and the supply-block rejection/event contract. To
+isolate those API transactions from enemy interruption while keeping construction sites visible
+to the five-second poll, the harness temporarily enables God Mode and normalizes any authored or
+cheat construction/production multiplier to the neutral <code>1.0</code>, then restores the exact prior
+values on completion, failure, timeout, match end, reset, deinitialization, or verdict. A private
+non-<code>UObject</code> probe owns this state machine and all of its delegate bindings; the MatchCheck
+subsystem remains the sole tick, reflected callback target, alarm sink, and verdict publisher.
+This is not balance or survivability evidence.</li><li><strong>Watchdog framework + v1 watchdogs</strong> (poll-based now; will consume the event stream for
+richer rules once it lands):
+<ul><li><code>EconomyLiveness</code> — a player with workers but zero income for 60s (the dead-economy class)</li><li><code>BankRunaway</code> — at verdict, a bank remains above threshold after a full uninterrupted window
+without active production/construction or an observed resource debit. Activity later in the
+match clears the candidate because it proves the AI can spend. Evaluation occurs at every
+committed match boundary before repeat state is reset, and the verdict retains the longest
+rich-idle candidate across the complete run, including recovered candidates.</li><li><code>TeleportDetector</code> — any pawn displaced farther than MaxSpeed × window (the builder-teleport class)</li><li><code>WorkerSlaughter</code> — a roster with draft-capable workers suffers repeated worker deaths at
+home without a new draft event. Each death is judged when it happens, with the shared
+strategic-collapse policy: a worker lost while a materially superior hostile force occupies
+the player's buildings had no defense to join, so that death does not extend the unanswered
+run, and the attackers leaving later does not turn it into one. The verdict's per-player
+<code>workerDefenseWatch</code> records the unanswered count (<code>deathsSinceLastNewDraft</code>), the deaths
+during an occupied collapse (<code>deathsDuringOccupiedCollapse</code>), and the last classified local
+hostile/global friendly strength. This measures draft-event progress, not whether every
+casualty could have been saved. Unarmed worker deaths remain in telemetry without arming it.</li><li><code>StuckStorm</code> — no-progress order voids past threshold/min</li><li><code>WallClock</code> — the run did not finish in wall-clock time: three times the expected run (match
+length × repeats ÷ speed) plus any performance sample and 15 minutes, or
+<code>-RTSMatchCheckWallLimit=&lt;seconds&gt;</code>. The harness also keeps judging while the world is paused,
+since a finished match pauses it.</li></ul></li></ol>
+<h3 id="match-screenshots">Match screenshots</h3>
+<p><code>-RTSMatchShots=&lt;seconds&gt;</code> saves frames of a rendered match to look at afterwards; it works with
+or without <code>-RTSMatchCheck</code>. At that interval of game time it points the local player's camera at
+the busiest place on the map and saves a frame there, to <code>-RTSMatchShotsOutput=&lt;directory&gt;</code>
+(default <code>Saved/Diagnostics/MatchShots</code>), named <code>match_&lt;shot&gt;_&lt;game seconds&gt;s.png</code>. Each living
+unit proposes a view of everything within 1,200 cm of it. A view scores one point per moving unit,
+plus three points per unit when opposing sides share it, so fights win over traffic. Every second
+shot looks at the busiest view at least 3,000 cm from the busiest one, so one fight does not hide
+the rest of the map. Each shot logs its view under <code>[MatchShots]</code>, followed by every pair of
+units in it standing inside each other (closer than half their radii sum), with whether they are
+friends or enemies and each unit's order and speed; harvesters passing through each other on the
+mineral line are expected there. Add <code>r.MotionBlurQuality 0</code> for sharp frames and the <code>NoFog</code> cheat
+(<code>-ExecCmds=...,NoFog</code>) to see enemy units. The flag does nothing without rendering (<code>-NullRHI</code>).</p>
+<h2 id="movement-benchmark">Movement benchmark</h2>
+<p><code>-RTSNavBench=&lt;scenario&gt;</code> runs one scripted movement scenario on the Complete starter map
+(<code>/RealTimeStrategy/Starter/Complete/Generated/Maps/L_RTSComplete_Starter</code>) without starting the
+skirmish, measures it, writes <code>Saved/Diagnostics/navbench_&lt;scenario&gt;_&lt;UTC&gt;.json</code> and exits. Units
+belong to the local player and are ordered through the player's own order path, so a group move
+gets the same formation a mouse click does. Scenarios run in the open lane at Y = -3500 and build
+their own walls and buildings:</p>
+<div class="table-wrap"><table><thead><tr><th>Scenario</th><th>What it does</th></tr></thead><tbody><tr><td><code>open</code></td><td>50 Riflemen cross 8,500 cm of open ground.</td></tr><tr><td><code>choke</code></td><td>50 Riflemen pass a wall across the map through one gap (<code>-RTSNavBenchGap=&lt;cm&gt;</code>, default 300).</td></tr><tr><td><code>mixed_choke</code></td><td>10 Vanguards and 30 Riflemen pass the same wall together (gap at least 400).</td></tr><tr><td><code>crossing</code></td><td>Two groups of 25 swap places head-on.</td></tr><tr><td><code>building_path</code></td><td>Three Barracks appear across the lane 4 s after 50 Riflemen set off.</td></tr><tr><td><code>building_on_units</code></td><td>A Barracks appears on 12 idle Riflemen; 2.5 s later they are ordered away.</td></tr><tr><td><code>closed</code></td><td>20 Riflemen are ordered into a sealed enclosure.</td></tr><tr><td><code>attack</code></td><td>30 Riflemen attack an enemy Headquarters 5,500 cm away that cannot be destroyed; a unit arrives once the Headquarters is within its weapon range.</td></tr><tr><td><code>scale</code></td><td>300 Riflemen (or <code>-RTSNavBenchUnits=&lt;n&gt;</code>) cross 8,000 cm.</td></tr><tr><td><code>mining</code></td><td>A Headquarters, eight mineral fields and 16 workers (or <code>-RTSNavBenchUnits=&lt;n&gt;</code>) mine for 120 s.</td></tr><tr><td><code>converge</code></td><td>50 Riflemen spread 2.5 m apart are ordered onto their own centre and should settle into a clump.</td></tr></tbody></table></div>
+<p>Other options: <code>-RTSNavBenchUnits=&lt;n&gt;</code> overrides a scenario's unit count,
+<code>-RTSNavBenchOutput=&lt;directory&gt;</code> the report folder, <code>-RTSNavBenchContent=&lt;folder&gt;</code> the Content Set
+the units and buildings load from, <code>-RTSNavBenchCsv</code> records a CSV profile of the run
+(<code>navbench_&lt;scenario&gt;.csv</code>, with the RTS category enabled: <code>MovementSettle</code>, <code>NavigationIslands</code>, and
+the engine's own timings), <code>-RTSNavBenchFlowPolicy=&lt;StockNavigation|MilitaryOnly|AllPawns&gt;</code> gives every
+unit that path policy (to compare flow-field paths with stock navigation), and <code>-RTSNavBenchKeepAlive</code>
+keeps the process running. For a
+rendered run, <code>-RTSNavBenchView</code> centres the camera on the scenario and <code>-RTSNavBenchShots=&lt;seconds&gt;</code>
+saves a screenshot at that interval (from the renderer, so the window does not need focus).</p>
+<p>The report (<code>"schema": "navbench/1"</code>) holds, for the ordered units:</p>
+<ul><li><code>arrived</code>, <code>gave_up</code> (the order ended away from the goal), <code>still_moving</code> (at the time limit).</li><li><code>arrival_seconds</code> and <code>arrival_vs_straight_line</code> (time over straight-line distance at full
+speed), each as count/p50/p95/max. A unit arrives within max(100 cm, 2 radii) of the goal it was
+given, or when its order ends within 300 cm of it.</li><li><code>stall_unit_seconds</code> (seconds a unit with an unfinished order moved under 5 cm per 0.25 s sample,
+after a 1 s grace), <code>longest_still_seconds</code>, <code>permanent_stalls</code> (still stalled for 5 s at the end)
+and <code>order_voids</code> (no-progress order voids during the run).</li><li><code>heading_reversals_per_moving_unit_minute</code>: direction changes over 120 degrees while moving.</li><li>Body overlap, counted every frame: <code>peak_touching_pairs</code>/<code>touching_pair_seconds</code> (centres closer
+than 90% of the sum of radii) and <code>peak_stacked_pairs</code>/<code>stacked_pair_seconds</code> (closer than half),
+plus <code>final_overlapping_pairs</code>/<code>final_stacked_pairs</code> at the end. Units that walk through each
+other still arrive fast, so these are the numbers that show it.</li><li><code>worst_clump_ratio</code> and <code>clumps</code>: each arrived group's radius over the radius of the densest disc
+the same units could form.</li><li>For <code>attack</code>, <code>arrival_vs_straight_line</code> measures against the distance to the target's footprint
+less the weapon range.</li><li><code>mining</code>: <code>income_per_minute</code> (minerals banked), <code>working_units</code> and <code>idle_workers</code> (workers that
+stopped working; should be 0). Miners count toward overlap and falls but not arrival or stalls.</li><li><code>units_inside_footprint</code> (<code>building_on_units</code>): units still inside the building 2.5 s after it
+appeared.</li><li><code>final_goal_distance</code> (to the goal each unit's order gave it) and <code>requested_goal_distance</code> (to the
+point the scenario asked for). When an order redirects an unreachable goal, units can arrive at
+their own goal while staying far from the requested one; the second number shows it.</li><li><code>fell_off_map</code> and <code>fallen</code> (unit, seconds, where it left the ground): units that dropped a metre
+below where they spawned.</li><li><code>stuck_units</code>: up to 12 units that did not arrive, with their order, path-following state,
+location, goal and longest pause.</li><li><code>frame_wall_ms</code> (p50/p95/max) with the benchmark's own work subtracted, <code>worst_frames</code> (the five
+slowest, with the second of the run each happened), and <code>unit_radii</code>.</li></ul>
+<p>The process exits 0 when the scenario ran and 1 when it could not be set up (<code>setup_failure</code>).</p>
+<h2 id="shared-conventions">Shared conventions</h2>
+<ul><li>All thresholds <code>UPROPERTY(Config)</code> — rebalance via DefaultGame.ini, never code.</li><li>Event <code>type</code> names are <code>Category.Event</code> PascalCase; add new ones freely, never rename existing.</li><li>Timestamps are SIM seconds (GetWorld()-&gt;GetTimeSeconds()), not wall clock.</li><li>Capture and file output ship disabled; flags/CVars enable them. Guarded instrumentation must remain
+bounded and negligible when unarmed. Gameplay analytics CSV
+snapshots are opt-in through a positive configured interval or
+<code>-RTSAnalyticsInterval=&lt;seconds&gt;</code>; <code>-RTSAnalyticsOutput=&lt;absolute-file&gt;.csv</code> selects a unique
+invocation-bound destination but does not enable capture by itself.</li><li>One JSON verdict schema, versioned: <code>{"version": 2, "result": "pass|fail", "simSeconds": N,
+"matchEnded": bool, "winner": string, "completedMatches": N, "requiredMatches": N,
+"humanReadiness": {"required", "completedChecks", "requiredChecks", "controller", "ownership",
+"camera", "hud", "enhancedInput", "vision", "selection", "gatherOrder", "resourceChanged",
+"cameraMoved", "complete"}, "transactionReadiness": {"required", "completedChecks",
+"requiredChecks", "catalogDiscovered", "placementRejected", "constructionOrder",
+"constructionPayment", "constructionComplete", "constructionCancelOrder",
+"constructionCancelPayment", "constructionRefund", "productionQueue", "productionPayment",
+"productionCancel", "productionRefund", "rallyCommitted", "unitSpawned", "rallyFollowed",
+"supplyBlocked", "complete", "failureDetail"},
+"matches": [{"index", "winner", "simSeconds"}],
+"alarms": [{"watchdog", "player", "detail"}],
+"performance": {"enabled", "warmupWallSeconds", "sampleWallSeconds", "renderingMode",
+"requestedSampleWallSeconds", "frameSamples",
+"frameAverageMs", "frameP50Ms", "frameP95Ms", "frameP99Ms", "worstFrameMs",
+"hitchesOver50Ms", "hitchesOver100Ms", "hitchesOver200Ms", "sampledPeakActors",
+"sampledPeakPawns", "sampledPeakRTSUnits", "sampledPeakProjectiles",
+"sampledPeakComponents", "sampledPeakWidgets", "sampledPeakActiveOrders",
+"sampledPeakQueuedProduction", "initialUsedPhysicalBytes", "peakUsedPhysicalBytes",
+"finalUsedPhysicalBytes", "unrealTrackedMemoryAvailable", "initialUnrealAllocatedBytes",
+"peakUnrealAllocatedBytes", "finalUnrealAllocatedBytes", "garbageCollectionCount",
+"garbageCollectionTotalMs", "garbageCollectionWorstMs",
+"network": {"samples", "peakConnections", "peakConnectionInBytesPerSecond",
+"peakConnectionOutBytesPerSecond", "peakConnectionInPacketsPerSecond",
+"peakConnectionOutPacketsPerSecond", "peakConnectionQueuedBits", "latestInTotalBytes",
+"latestOutTotalBytes", "latestInTotalPackets", "latestOutTotalPackets",
+"latestInTotalPacketsLost", "latestOutTotalPacketsLost",
+"latestAcceptedStrategicRequestWorkUnits", "latestRejectedStrategicRequestWorkUnits"},
+"workCounters": {"available", "replicationGatherCalls", "replicationCandidates",
+"replicationAdmitted", "replicationStreamingLevelRejects", "replicationVisibilityRejects",
+"fogTextureUploads", "fogPixelsProcessed", "fogTextureUploadBytes"},
+"targetRTSUnits", "runId", "captureRole", "synchronized", "authoritativeReadyRTSUnits",
+"authoritativeFinalRTSUnits", "authoritativePopulationSamples",
+"authoritativeMinimumRTSUnits", "authoritativeMaximumRTSUnits",
+"authoritativeBelowTargetSamples", "authoritativeBelowTargetFraction",
+"workloadParticipantOwners", "workloadWorkerClass", "workloadCombatClass",
+"workloadInitialReadyWorkers", "workloadInitialReadyCombatUnits", "workloadSpawnedUnits",
+"workloadReplacementUnits", "workloadSpawnFailures",
+"budget": {"evaluated", "passed", "profile", "violations"},
+"csvCapture": {"requirement": "required|not-applicable",
+"status": "finalized|invalid|not-applicable", "filename"}},
+"stats": {per-player headline numbers}}</code>.</li></ul>
+<h2 id="rendered-selection-inspection">Rendered selection inspection</h2>
+<p>In non-Shipping builds, <code>rts.diag.select BP_Worker_C_0</code> selects an existing locally owned actor
+through the normal selection component. Supply up to 32 exact actor names to inspect a mixed
+selection. The whole request is rejected if a name is absent or not locally owned/selectable.
+It does not spawn actors, grant resources, issue gameplay orders, or move the camera. Use it with
+Unreal's <code>Shot showui</code> command to review the actual portrait, information panel, and command card.</p>
+</main>
+<footer>Real-Time Strategy plugin 1.3.0. This page is generated from <code>Docs/DIAGNOSTICS_SPEC.md</code>.</footer>
+</body>
+</html>

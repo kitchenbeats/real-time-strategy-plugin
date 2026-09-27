@@ -12,6 +12,32 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Match screenshots, and worker deaths judged when they happen
+
+**Date:** 2026-09-26 · **Stage:** pre-release
+
+`-RTSMatchShots=<seconds>` (new private `URTSMatchShotsSubsystem`) saves frames of a rendered match,
+pointing the local camera at the busiest place on the map each time, so a match can be looked at
+afterwards without anyone at the window. See DIAGNOSTICS_SPEC.md, "Match screenshots".
+
+The MatchCheck `WorkerSlaughter` watchdog now judges each at-home worker death when it happens. A
+death while a materially superior force occupies the player's buildings no longer extends the
+unanswered run. Before, those deaths were held back ("deferred") and turned into an alarm as soon as
+the attackers left, so a player that was simply overrun failed the check (seen in a watched four-player
+match: 8 workers lost to 25 attackers against 4 defenders). `FPlayerWatchState` loses
+`bWorkerSlaughterDeferred` and `WorkerSlaughterDeferralObservations` and gains
+`AtHomeDeathsUnderCollapse`; `EvaluateWorkerSlaughter` is removed. In the verdict JSON,
+`workerDefenseWatch.deferredByOccupiedCollapse` and `collapseDeferralObservations` are replaced by
+`deathsDuringOccupiedCollapse`. Customer impact: tools that read those two verdict fields read the new
+one instead; the watchdog struct is diagnostic state that no customer code is expected to touch.
+
+Reviewed public-header fingerprint: `61D1337EAA7D25873AAF452033CB46119C5A8475` (182 paths).
+Reflection: `20BB6C7B111A2892EFDE8388174865F19DE73C0C` (the new subsystem class).
+Coverage: `RTS.Diagnostics.MatchCheck.WorkerSlaughterOccupation` (harassment still alarms; an overrun
+base does not, before or after the attackers leave).
+
+---
+
 ## Navigation size classes
 
 **Date:** 2026-09-26 · **Stage:** pre-release

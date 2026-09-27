@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting Started — Real-Time Strategy</title>
+<style>
+:root { color-scheme: light dark; --bg: #fbfbfa; --fg: #1d1f23; --muted: #5d6470; --line: #d9dce1;
+  --panel: #f0f1f3; --accent: #1f6fb2; --code-bg: #eef0f3; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16181c; --fg: #e4e6ea; --muted: #a3a9b3; --line: #343841; --panel: #1f2227;
+    --accent: #6cb4f0; --code-bg: #24282e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+header { border-bottom: 1px solid var(--line); background: var(--panel); }
+header .bar { max-width: 980px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap;
+  gap: 6px 18px; align-items: baseline; }
+header .brand { font-weight: 700; color: var(--fg); text-decoration: none; margin-right: 8px; }
+header nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+header nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+header nav a:hover, header nav a.current { color: var(--accent); }
+main { max-width: 980px; margin: 0 auto; padding: 8px 20px 48px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; }
+h1 { font-size: 2em; margin-top: 0.8em; }
+h2 { font-size: 1.45em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.15em; }
+a { color: var(--accent); }
+p, ul, ol, table, pre, blockquote { margin: 0 0 1em; }
+li { margin: 0.2em 0; }
+li > ul, li > ol { margin: 0.2em 0 0.2em; }
+code { font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; padding: 0; overflow-wrap: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+blockquote { border-left: 4px solid var(--line); padding: 0 14px; color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+footer { max-width: 980px; margin: 0 auto; padding: 16px 20px 32px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="index.html">Real-Time Strategy</a><nav><a href="index.html">Home</a><a href="INSTALL_QUICKSTART.html" class="current">Getting Started</a><a href="CONTENT_SET_GUIDE.html">Content Set</a><a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint</a><a href="EXTENSION_GUIDE.html">C++</a><a href="PACKAGING.html">Packaging</a><a href="TROUBLESHOOTING.html">Troubleshooting</a></nav></div></header>
+<main>
+<h1 id="getting-started">Getting Started</h1>
+<p>This guide takes you from installing the plugin to playing your own copy of the included RTS game.
+It takes about ten minutes. You need Unreal Engine 5.8.</p>
+<h2 id="1-install-the-plugin">1. Install the plugin</h2>
+<h3 id="from-fab">From Fab</h3>
+<ol><li>Open the Epic Games Launcher and go to your <strong>Fab Library</strong> (under <strong>Unreal Engine &gt; Library</strong>).</li><li>Find <strong>Real-Time Strategy</strong> and choose <strong>Install to Engine</strong>. Pick your 5.8 engine.
+The Launcher installs the plugin into the engine's <code>Engine/Plugins/Marketplace</code> folder, so every
+project that uses that engine can enable it.</li></ol>
+<h3 id="from-a-plugin-folder">From a plugin folder</h3>
+<p>If you received the plugin as a folder instead, close the editor and copy the whole
+<code>RealTimeStrategy</code> folder to <code>&lt;YourProject&gt;/Plugins/RealTimeStrategy</code>. The file
+<code>RealTimeStrategy.uplugin</code> must sit directly inside that folder, with no extra folder level in
+between. Keep only one copy of the plugin: never have it both in the engine and in the project.</p>
+<h2 id="2-enable-it">2. Enable it</h2>
+<ol><li>Open your project in Unreal Engine 5.8. Any template works, including <strong>Blank</strong>.</li><li>Choose <strong>Edit &gt; Plugins</strong>, search for <strong>Real-Time Strategy</strong>, tick it, and restart the editor.</li></ol>
+<p>The plugin also turns on the engine plugins it needs (Enhanced Input, Niagara and Replication
+Graph). You do not need to enable them yourself.</p>
+<p>After the restart, a notification offers three choices:</p>
+<ul><li><strong>Install the Starter Game</strong> copies a complete, playable RTS into your project. Start here.</li><li><strong>Try It First</strong> opens the plugin's own sample map so you can press Play straight away.</li><li><strong>Later</strong> closes the notification.</li></ul>
+<p>The same actions stay available in two places: the <strong>RTS</strong> menu in the editor's main menu bar,
+and the <strong>Real-Time Strategy</strong> section of the <strong>Tools</strong> menu.</p>
+<div class="table-wrap"><table><thead><tr><th>Menu entry</th><th>What it does</th></tr></thead><tbody><tr><td><strong>Install the Starter Game</strong></td><td>Copies the starter game into <code>/Game/RTSStarterGame</code>, builds it and opens its map.</td></tr><tr><td><strong>Customize My Game</strong></td><td>Opens your installed game's Content Set, where you change units, buildings, costs and art.</td></tr><tr><td><strong>Open the Plugin's Sample Map</strong></td><td>Opens the read-only sample game inside the plugin. Useful to check the plugin works.</td></tr><tr><td><strong>Rename Game</strong></td><td>Sets your game's name for its menus and the packaged game's window title.</td></tr><tr><td><strong>Guide</strong></td><td>Opens this documentation.</td></tr><tr><td><strong>Online Documentation</strong> and <strong>Report a Problem</strong></td><td>Open the plugin's web pages in your browser.</td></tr></tbody></table></div>
+<h2 id="3-install-and-play-the-starter-game">3. Install and play the starter game</h2>
+<ol><li>Choose <strong>Install the Starter Game</strong> (in the notification, or <strong>RTS &gt; Install the Starter Game</strong>).
+If you have unsaved work, the editor asks you to save it first.</li><li>The plugin copies the starter game into <code>/Game/RTSStarterGame</code>, generates its units, buildings
+and map, and opens the map <code>/Game/RTSStarterGame/Generated/Maps/L_RTSComplete_Starter</code>. A
+notification says <strong>Starter game installed — it is your game now</strong>.</li><li>If the notification asks you to restart Unreal Editor (it does this the first time, to switch
+on the RTS mouse cursor), restart and reopen the map.</li><li>Press <strong>Play</strong>. The <strong>Skirmish</strong> setup screen appears:
+<ul><li><strong>Your name</strong> is the name other players see.</li><li><strong>Your faction</strong> is fixed while the game has one faction.</li><li><strong>AI opponents</strong> sets how many computer players join. <strong>None (sandbox)</strong> gives you an empty
+map to try things out.</li><li><strong>AI difficulty</strong> is <strong>Passive</strong> (builds up but never attacks), <strong>Easy</strong> or <strong>Normal</strong>. It is
+available when there is at least one AI opponent.</li></ul></li><li>Choose <strong>Start match</strong>.</li></ol>
+<p>The copy in <code>/Game/RTSStarterGame</code> belongs to your project. Change anything in it. Running
+<strong>Install the Starter Game</strong> again keeps your changes: it reuses your existing Content Set and
+rebuilds the game from it.</p>
+<p>The editor viewport shows only the ground, lights and a few volumes. Bases, workers and resources
+are created when the match starts, so press Play to see them.</p>
+<h3 id="playing">Playing</h3>
+<ul><li>Drag with the left mouse button to select units. Click a unit or building to select it.</li><li>Right-click the ground to move, an enemy to attack, or a mineral field to gather.</li><li>Select a worker to see what it can build on the command card. Select a building to train units or
+research upgrades. Every command card button shows its hotkey.</li><li><strong>Esc</strong> opens the game menu: <strong>Resume</strong>, <strong>Settings</strong>, <strong>Surrender</strong>, <strong>Return to setup</strong> and
+<strong>Quit game</strong>. <strong>Settings</strong> changes sound, display, edge scrolling, camera speed and key bindings.</li><li>The <strong>? Controls</strong> button on the HUD lists the main hotkeys.</li></ul>
+<p>The starter game has one faction with eight units and eight buildings, two resources (minerals and
+gas), construction, training, research, supply, aircraft, siege units, healing and defense towers.
+Its art is simple placeholder shapes so you can replace it with your own.</p>
+<h3 id="multiplayer-on-a-local-network">Multiplayer on a local network</h3>
+<p>On the setup screen, press <strong>Esc</strong> (<strong>Multiplayer &amp; settings</strong>). Under <strong>Multiplayer</strong>, one player
+chooses <strong>Host LAN game</strong>. The others type the host's address and port and choose <strong>Join LAN game</strong>.
+Each player picks a base and marks themselves <strong>Ready</strong>, then the host starts the match. For a
+server without a local player, see <a href="DEDICATED_LOBBIES.html">Dedicated Server Lobbies</a>.</p>
+<h2 id="4-make-it-your-game">4. Make it your game</h2>
+<p>Choose <strong>RTS &gt; Customize My Game</strong>. This opens your game's <strong>Content Set</strong>, the one asset that
+describes your whole game: its units, buildings, resources, factions and match setup.</p>
+<ol><li>Expand <strong>Units</strong>, open <strong>Worker</strong>, and change its <strong>Display Name</strong> to something new, such as
+"Drone".</li><li>Choose <strong>Generate Game</strong> at the top of the Content Set. The plugin rebuilds your game from the
+Content Set in a second or two.</li><li>Choose <strong>Play</strong>. The Content Set opens its map and starts the game. The worker's train button,
+tooltip and selection panel now show its new name.</li></ol>
+<p><a href="CONTENT_SET_GUIDE.html">The Content Set</a> explains every section, how to add units and buildings,
+and how to swap in your own models.</p>
+<p>To give a unit Blueprint logic of its own, open it in the Content Set and choose
+<strong>Create Custom Blueprint</strong>. See <a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint Quick Reference</a>.</p>
+<h2 id="5-start-a-new-game-from-scratch-optional">5. Start a new game from scratch (optional)</h2>
+<p>You do not have to start from the starter game. To begin with a small ruleset:</p>
+<ol><li>In the Content Browser, choose <strong>+ Add &gt; Gameplay</strong>, then <strong>RTS Content Set</strong> in the <strong>RTS</strong>
+section. Save it in a folder of your own, for example <code>/Game/MyRTS</code>.</li><li>Open it and choose <strong>Generate Game</strong>, then <strong>Play</strong>.</li></ol>
+<p>A new Content Set starts with a small working game: minerals, a mineral field, a worker, a
+rifleman, a town hall, a barracks and a supply depot, all with placeholder shapes. Its <strong>Id</strong> is the
+asset name without the <code>DA_</code> prefix, and Generate writes into <code>/Game/RTS/Generated/&lt;Id&gt;</code>, with the
+map at <code>/Game/RTS/Generated/&lt;Id&gt;/Maps/L_&lt;Id&gt;_Starter</code>. This small game has no factions, so the
+match starts straight away without the setup screen. Add a faction and turn on
+<strong>Require Player Setup</strong> under <strong>Match Setup</strong> to get the setup screen.</p>
+<h2 id="6-c-projects">6. C++ projects</h2>
+<p>Enabling the plugin is enough for Blueprint-only projects. In a C++ project, add the runtime module
+to your game module's <code>.Build.cs</code> before you include plugin headers:</p>
+<pre><code class="language-csharp">PublicDependencyModuleNames.Add("RealTimeStrategy");</code></pre>
+<p>Add <code>RealTimeStrategyExamples</code> too only if your code uses the example classes. The editor module
+is not a runtime dependency. See <a href="EXTENSION_GUIDE.html">Extending with C++</a>.</p>
+<h2 id="7-before-you-package">7. Before you package</h2>
+<p><strong>Install the Starter Game</strong> sets your installed map as the <strong>Game Default Map</strong> and <strong>Editor
+Startup Map</strong>, but only where those settings were still empty or on the engine's template maps.
+If your project already had its own startup map, choose your game's map under
+<strong>Project Settings &gt; Maps &amp; Modes</strong>. Then follow <a href="PACKAGING.html">Packaging and Multiplayer</a>, and
+always test the packaged game, not only Play in Editor.</p>
+<h2 id="update-disable-or-remove-the-plugin">Update, disable or remove the plugin</h2>
+<p>Back up or commit your project (including <code>Config</code> and <code>Content</code>) before you change the plugin.</p>
+<ul><li><strong>Update.</strong> Close the editor and update the plugin (from the Fab Library, or by replacing the
+whole plugin folder; never mix files from two versions). Reopen the project, open your Content
+Set, choose <strong>Check for Problems</strong>, then <strong>Generate Game</strong>. If Generate reports that the Content
+Set needs an upgrade, follow <a href="CONTENT_SET_MIGRATION.html">Content Set Migration</a>.</li><li><strong>Disable.</strong> Assets made from plugin classes (your Content Set, generated Blueprints, maps) cannot
+load while the plugin is off. Do not save, redirect or delete them while it is disabled. Turn the
+plugin back on to use them again.</li><li><strong>Remove.</strong> Removing the plugin does not convert or delete your project's assets. Keep a backup
+so you can reinstall the same version if you need those assets later.</li></ul>
+<h2 id="next-steps">Next steps</h2>
+<ul><li><a href="index.html">Documentation index</a> lists every guide.</li><li><a href="SUPPORTED_PRODUCT_CONTRACT.html">What's Supported</a> lists engine versions, platforms and what
+support covers.</li><li><a href="TROUBLESHOOTING.html">Troubleshooting</a> covers the problems people hit in their first hour.</li></ul>
+</main>
+<footer>Real-Time Strategy plugin 1.3.0. This page is generated from <code>Docs/INSTALL_QUICKSTART.md</code>.</footer>
+</body>
+</html>

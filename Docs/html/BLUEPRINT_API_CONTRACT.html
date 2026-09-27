@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blueprint API Rules — Real-Time Strategy</title>
+<style>
+:root { color-scheme: light dark; --bg: #fbfbfa; --fg: #1d1f23; --muted: #5d6470; --line: #d9dce1;
+  --panel: #f0f1f3; --accent: #1f6fb2; --code-bg: #eef0f3; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16181c; --fg: #e4e6ea; --muted: #a3a9b3; --line: #343841; --panel: #1f2227;
+    --accent: #6cb4f0; --code-bg: #24282e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+header { border-bottom: 1px solid var(--line); background: var(--panel); }
+header .bar { max-width: 980px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap;
+  gap: 6px 18px; align-items: baseline; }
+header .brand { font-weight: 700; color: var(--fg); text-decoration: none; margin-right: 8px; }
+header nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+header nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+header nav a:hover, header nav a.current { color: var(--accent); }
+main { max-width: 980px; margin: 0 auto; padding: 8px 20px 48px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; }
+h1 { font-size: 2em; margin-top: 0.8em; }
+h2 { font-size: 1.45em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.15em; }
+a { color: var(--accent); }
+p, ul, ol, table, pre, blockquote { margin: 0 0 1em; }
+li { margin: 0.2em 0; }
+li > ul, li > ol { margin: 0.2em 0 0.2em; }
+code { font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; padding: 0; overflow-wrap: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+blockquote { border-left: 4px solid var(--line); padding: 0 14px; color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+footer { max-width: 980px; margin: 0 auto; padding: 16px 20px 32px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="index.html">Real-Time Strategy</a><nav><a href="index.html">Home</a><a href="INSTALL_QUICKSTART.html">Getting Started</a><a href="CONTENT_SET_GUIDE.html">Content Set</a><a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint</a><a href="EXTENSION_GUIDE.html">C++</a><a href="PACKAGING.html">Packaging</a><a href="TROUBLESHOOTING.html">Troubleshooting</a></nav></div></header>
+<main>
+<h1 id="blueprint-api-rules">Blueprint API Rules</h1>
+<p>These are the rules every Real-Time Strategy Blueprint node follows. Blueprint and C++ use the same
+runtime objects and gameplay rules; Blueprint nodes are not a less strict path. For the most useful
+events and nodes with examples, start with the <a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint Quick Reference</a>.</p>
+<h2 id="finding-the-right-node">Finding the right node</h2>
+<p>All supported Blueprint functions, events, delegates, and editable fields live under an
+<code>RTS|System</code> category. Start with the system being changed—such as <code>RTS|Orders</code>, <code>RTS|Economy</code>,
+<code>RTS|Construction</code>, <code>RTS|Combat</code>, <code>RTS|AI</code>, or <code>RTS|UI Data</code>—instead of searching a single
+undifferentiated RTS list. Every exposed member has an editor tooltip. Your own subclasses can use
+the same category tree for their additions.</p>
+<p>Pure nodes are side-effect-free queries. Use them for UI refresh, command gating, AI policy, and
+validation. Execution-pin nodes either change local presentation, submit a client request, or
+perform an authoritative gameplay mutation; their tooltip and authority badge identify which
+contract applies.</p>
+<h2 id="authority-and-request-results">Authority and request results</h2>
+<p>Nodes marked <strong>Authority Only</strong> mutate gameplay truth and must run on the server. The native
+implementation still validates authority; the Blueprint badge is guidance, not the security
+boundary. From an owning client, use the corresponding high-level request on
+<code>ARTSPlayerController</code> instead of calling an authority-only gameplay transaction directly. For a
+generic selected-unit order, call <strong>Get Order Submission</strong> on the owning controller and then
+<strong>Issue Order to Selected Actors</strong> on its replicated native Order Submission component. That
+controller-owned component is a supported request boundary; do not create a second one. The
+controller remains the high-level command, order-class policy, targeting, and event surface.</p>
+<p>Boolean request nodes label their output <strong>Request Accepted</strong> or <strong>Request Submitted</strong>. <code>true</code>
+means the request passed caller-side admission and was submitted. It does not report eventual
+completion or, for a selected-unit order, how many units authority accepted: the server may reject
+malformed or stale input, and later gameplay may interrupt an accepted action.</p>
+<p>Treat replicated state and completion/cancellation/failure delegates as the result of an
+asynchronous action. Do not spend resources, show permanent success, or advance objectives merely
+because a request result is true.</p>
+<h2 id="failure-and-feedback">Failure and feedback</h2>
+<ul><li>A pure validation node returns current eligibility only; revalidate on authority immediately
+before mutation.</li><li>A <code>false</code> action or request result means no successful local admission or authoritative commit.
+Do not emit a success notification.</li><li>Player-facing rejection text is delivered through the controller error event/delegate and the
+feature-specific failure delegates documented in the system guide.</li><li>Content-authoring failures are reported by <strong>Check for Problems</strong> and the <strong>RTS Authoring</strong>
+Message Log. Runtime configuration and transaction problems are available through RTS
+diagnostics and match-check output.</li><li>Null actors, invalid classes, non-finite coordinates, invalid indexes, wrong ownership, wrong
+authority, insufficient resources, unmet technology, and stale targets fail without a partial
+gameplay transaction unless a narrower feature contract explicitly documents another result.</li></ul>
+<h2 id="pins-and-defaults">Pins and defaults</h2>
+<p>Optional queue/product indexes default to the first queue/product where the node advertises a
+default of zero. An order index of <code>-1</code> means the order's default/no explicit slot only on nodes
+that expose that default. Do not invent sentinel values for other pins. World-context pins on
+function libraries are supplied by the calling Blueprint when marked as world context.</p>
+<p>Arrays and structs returned by getters are snapshots. Changing a returned value does not mutate
+plugin state; use the documented action or transaction node. Target actor and location pins are
+validated together according to the order or ability target policy.</p>
+<h2 id="extending-in-blueprint">Extending in Blueprint</h2>
+<p>Prefer the narrow <code>BlueprintNativeEvent</code> policy hooks documented by each feature. Call the parent
+implementation for additive behavior. Skip it only where a guide says the function is a complete
+replacement, and then keep every authority, ownership, payment, cooldown, replication, notification
+and cleanup rule that guide names.</p>
+<p>Use <a href="EXTENSION_GUIDE.html">Extending with C++</a> to choose the feature path,
+<a href="CPP_EXTENSION_CONTRACT.html">C++ Extension Rules</a> for the shared runtime rules, and the feature guide
+for its exact events and transaction order.</p>
+</main>
+<footer>Real-Time Strategy plugin 1.3.0. This page is generated from <code>Docs/BLUEPRINT_API_CONTRACT.md</code>.</footer>
+</body>
+</html>

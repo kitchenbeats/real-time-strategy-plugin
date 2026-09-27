@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Packaging and Multiplayer — Real-Time Strategy</title>
+<style>
+:root { color-scheme: light dark; --bg: #fbfbfa; --fg: #1d1f23; --muted: #5d6470; --line: #d9dce1;
+  --panel: #f0f1f3; --accent: #1f6fb2; --code-bg: #eef0f3; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16181c; --fg: #e4e6ea; --muted: #a3a9b3; --line: #343841; --panel: #1f2227;
+    --accent: #6cb4f0; --code-bg: #24282e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+header { border-bottom: 1px solid var(--line); background: var(--panel); }
+header .bar { max-width: 980px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap;
+  gap: 6px 18px; align-items: baseline; }
+header .brand { font-weight: 700; color: var(--fg); text-decoration: none; margin-right: 8px; }
+header nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+header nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+header nav a:hover, header nav a.current { color: var(--accent); }
+main { max-width: 980px; margin: 0 auto; padding: 8px 20px 48px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; }
+h1 { font-size: 2em; margin-top: 0.8em; }
+h2 { font-size: 1.45em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.15em; }
+a { color: var(--accent); }
+p, ul, ol, table, pre, blockquote { margin: 0 0 1em; }
+li { margin: 0.2em 0; }
+li > ul, li > ol { margin: 0.2em 0 0.2em; }
+code { font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; padding: 0; overflow-wrap: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+blockquote { border-left: 4px solid var(--line); padding: 0 14px; color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+footer { max-width: 980px; margin: 0 auto; padding: 16px 20px 32px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="index.html">Real-Time Strategy</a><nav><a href="index.html">Home</a><a href="INSTALL_QUICKSTART.html">Getting Started</a><a href="CONTENT_SET_GUIDE.html">Content Set</a><a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint</a><a href="EXTENSION_GUIDE.html">C++</a><a href="PACKAGING.html" class="current">Packaging</a><a href="TROUBLESHOOTING.html">Troubleshooting</a></nav></div></header>
+<main>
+<h1 id="packaging-and-multiplayer">Packaging and Multiplayer</h1>
+<p>This guide covers turning your RTS into a packaged game and testing it, including multiplayer.
+Package only after your game plays correctly in the editor. Even then, always test the packaged
+game itself: Play in Editor does not show missing cooked assets, the wrong startup map or signing
+problems.</p>
+<h2 id="before-you-package">Before you package</h2>
+<ol><li>Save everything: Content Sets, Anim Sets, Custom Blueprints, maps and settings.</li><li>Open your Content Set, choose <strong>Check for Problems</strong> and fix every error in the
+<strong>RTS Authoring</strong> page of the Message Log (<strong>Window &gt; Message Log</strong>).</li><li>Choose <strong>Generate Game</strong> after your last change to the Content Set, so the generated assets
+match it.</li><li>Choose <strong>Play</strong> and play a full match: select units, move, gather, build, train, fight, win or
+lose, and restart.</li><li>Open <strong>Project Settings &gt; Maps &amp; Modes</strong> and set <strong>Game Default Map</strong> to your generated map
+(for the installed starter game, <code>/Game/RTSStarterGame/Generated/Maps/L_RTSComplete_Starter</code>).
+<strong>Install the Starter Game</strong> fills this in only when it was empty or still on an engine
+template map. Generating again never changes it.</li><li>Make sure every asset your game loads gets cooked. Assets the game finds only by name or path at
+run time must be added under <strong>Project Settings &gt; Packaging</strong> (for example in
+<strong>Additional Asset Directories to Cook</strong>).</li><li>In a C++ project, check that your module lists <code>RealTimeStrategy</code> in its <code>.Build.cs</code>
+dependencies (and <code>RealTimeStrategyExamples</code> only if you use the examples).</li><li>Package into an empty output folder, start the packaged game directly, and keep its log.</li></ol>
+<h2 id="package-the-game">Package the game</h2>
+<p>Use Unreal's normal <strong>Platforms</strong> menu, pick your platform, then <strong>Package Project</strong>. A
+Blueprint-only project does not need a C++ module to use the plugin. If packaging reports that
+plugin modules are missing or were built for another engine version, reinstall the plugin version
+that matches your engine; do not convert the project to C++ to work around it.</p>
+<p>In a C++ project, build with the compiler and SDK that UE 5.8 requires for your platform. Keep
+editor-only code (for example tools that call Content Set functions) in an editor module; your game
+module depends only on <code>RealTimeStrategy</code>. Package both Development and Shipping, and test the
+Shipping build, which is what players run.</p>
+<h2 id="mac-shipping-networking">Mac Shipping networking</h2>
+<p>On a Mac, a sandboxed Shipping game needs permission to host and join network games.
+<strong>Install the Starter Game</strong> sets this up: it copies the engine's server entitlement template into
+your project's <code>Build/Mac/Resources</code> folder and selects it for Shipping builds. If your project
+already had its own signing settings or entitlement files, the plugin keeps them and tells you to
+review them.</p>
+<p>If you use your own entitlements, a game that hosts and joins needs both
+<code>com.apple.security.network.client</code> and <code>com.apple.security.network.server</code>. Keep any other
+entitlements your project needs, and keep the entitlement file in source control.</p>
+<p>Package again into a fresh folder after changing signing settings; an existing app keeps its old
+signature. To check the packaged app's entitlements, run:</p>
+<pre><code class="language-bash">codesign --display --entitlements - --xml "/path/to/YourGame.app"</code></pre>
+<p>Then test hosting and joining with the Shipping build. A Development build does not use the
+Shipping signing settings.</p>
+<h2 id="art-and-animation-checks">Art and animation checks</h2>
+<ul><li>Move or rename your own assets only through the Content Browser, and fix up redirectors
+(right-click the folder, <strong>Fix Up Redirectors</strong>) before the final package.</li><li><strong>Direct Anim Set</strong> clips must be saved, full-pose and in-place, and made for the unit's skeleton.
+In the packaged game, watch idle, walking, working, attacking, getting hit and dying.</li><li>A <strong>Custom Animation Blueprint</strong> must compile for the unit's skeleton. Check poses, foot contact,
+materials, LODs and how the unit reads from the RTS camera distance.</li><li>Materials used on skeletal meshes need <strong>Used with Skeletal Mesh</strong> turned on, or characters show
+the default material in the packaged game.</li><li>Art from Manny, Mixamo, Meshy, marketplaces or your studio stays under its own license. The
+plugin does not give you rights to redistribute it.</li></ul>
+<h2 id="multiplayer">Multiplayer</h2>
+<p>The included game supports network play without extra setup:</p>
+<ul><li><strong>Local network.</strong> On the setup screen, press <strong>Esc</strong> (<strong>Multiplayer &amp; settings</strong>). One player
+chooses <strong>Host LAN game</strong>; the others enter the host's address and port and choose
+<strong>Join LAN game</strong>. Each player picks a base or chooses to spectate, marks themselves <strong>Ready</strong>,
+and the host starts the match. Players who join a running match watch as spectators.</li><li><strong>Dedicated server.</strong> See <a href="DEDICATED_LOBBIES.html">Dedicated Server Lobbies</a>.</li><li><strong>Minimum players.</strong> <strong>Match Setup &gt; Minimum Human Players to Start</strong> in the Content Set makes
+the match wait for that many human players.</li></ul>
+<p>Test every kind of multiplayer game you plan to ship (hosting from a player's machine, a dedicated
+server, or both) in packaged builds; one working in Play in Editor does not prove the other works.</p>
+<p>The server decides all gameplay. Keep your own gameplay changes on the server and send player
+commands through the player controller, as described in <a href="EXTENSION_GUIDE.html">Extending with C++</a> and
+the <a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint Quick Reference</a>. The plugin uses Unreal's
+Replication Graph so that each player receives only what their units can see. If you enable Unreal's
+Iris replication, you must provide an equivalent visibility filter or turn Iris off.</p>
+<p>Matchmaking, accounts, backend services, anti-cheat, campaigns and saved games are not included;
+add them with your own systems. Player settings (controls, audio, display) are saved locally by the
+included menus; see <a href="UI_DATA_API.html">UI Data API</a>.</p>
+<h2 id="platforms">Platforms</h2>
+<p>This release is tested on macOS with Apple Silicon and Unreal Engine 5.8. See
+<a href="SUPPORTED_PRODUCT_CONTRACT.html">What's Supported</a> for the current platform list before you
+promise a platform to your players.</p>
+<h2 id="check-the-packaged-game">Check the packaged game</h2>
+<p>On a clean machine or user account, check that the packaged game:</p>
+<ul><li>starts on your map without needing the editor or your project folder;</li><li>shows the HUD and creates the human and AI players you expect;</li><li>plays a full match and can restart;</li><li>shows your art and animations in every state;</li><li>has no fatal errors, missing packages, Blueprint errors or repeated warnings in its log; and</li><li>runs well enough on your target hardware with the number of units you plan to allow.</li></ul>
+<p>If something fails, see <a href="TROUBLESHOOTING.html#it-works-in-the-editor-but-not-in-the-packaged-game">Troubleshooting</a>.</p>
+</main>
+<footer>Real-Time Strategy plugin 1.3.0. This page is generated from <code>Docs/PACKAGING.md</code>.</footer>
+</body>
+</html>

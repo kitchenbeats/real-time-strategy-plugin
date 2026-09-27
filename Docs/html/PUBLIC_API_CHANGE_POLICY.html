@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API Change Policy — Real-Time Strategy</title>
+<style>
+:root { color-scheme: light dark; --bg: #fbfbfa; --fg: #1d1f23; --muted: #5d6470; --line: #d9dce1;
+  --panel: #f0f1f3; --accent: #1f6fb2; --code-bg: #eef0f3; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #16181c; --fg: #e4e6ea; --muted: #a3a9b3; --line: #343841; --panel: #1f2227;
+    --accent: #6cb4f0; --code-bg: #24282e; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+header { border-bottom: 1px solid var(--line); background: var(--panel); }
+header .bar { max-width: 980px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap;
+  gap: 6px 18px; align-items: baseline; }
+header .brand { font-weight: 700; color: var(--fg); text-decoration: none; margin-right: 8px; }
+header nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+header nav a { color: var(--muted); text-decoration: none; font-size: 14px; }
+header nav a:hover, header nav a.current { color: var(--accent); }
+main { max-width: 980px; margin: 0 auto; padding: 8px 20px 48px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.6em 0 0.5em; }
+h1 { font-size: 2em; margin-top: 0.8em; }
+h2 { font-size: 1.45em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+h3 { font-size: 1.15em; }
+a { color: var(--accent); }
+p, ul, ol, table, pre, blockquote { margin: 0 0 1em; }
+li { margin: 0.2em 0; }
+li > ul, li > ol { margin: 0.2em 0 0.2em; }
+code { font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; padding: 0; overflow-wrap: normal; white-space: pre; }
+.table-wrap { overflow-x: auto; margin: 0 0 1em; }
+table { border-collapse: collapse; width: 100%; margin: 0; font-size: 0.95em; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--panel); }
+blockquote { border-left: 4px solid var(--line); padding: 0 14px; color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 2em 0; }
+footer { max-width: 980px; margin: 0 auto; padding: 16px 20px 32px; color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="index.html">Real-Time Strategy</a><nav><a href="index.html">Home</a><a href="INSTALL_QUICKSTART.html">Getting Started</a><a href="CONTENT_SET_GUIDE.html">Content Set</a><a href="BLUEPRINT_QUICK_REFERENCE.html">Blueprint</a><a href="EXTENSION_GUIDE.html">C++</a><a href="PACKAGING.html">Packaging</a><a href="TROUBLESHOOTING.html">Troubleshooting</a></nav></div></header>
+<main>
+<h1 id="api-change-policy">API Change Policy</h1>
+<p>This page explains how the plugin's Blueprint and C++ API may change between versions, and what you
+need to do when it does.</p>
+<h2 id="what-this-means-for-you">What this means for you</h2>
+<ul><li><strong>Before the first Fab release (now):</strong> names, pins and C++ signatures may still change between
+versions. Every intentional change, with what you would need to do about it, is listed in the
+<a href="API_CHANGE_LEDGER.html">API Change Log</a>. Read it before you update.</li><li><strong>From the first Fab release (version 1.0.0):</strong> patch releases keep your assets and code working;
+breaking changes wait for a new major version, and renamed types keep working through Unreal
+redirects.</li><li>The supported C++ headers are listed in <a href="CPP_API_SURFACE.html">C++ API Surface</a>. Other headers under
+<code>Public</code> compile, but are not a promise.</li><li>Your Content Set data is upgraded through <a href="CONTENT_SET_MIGRATION.html">Content Set Migration</a>, not
+by this policy.</li></ul>
+<h2 id="how-changes-are-made">How changes are made</h2>
+<p>The rest of this page is the policy the plugin's maintainers follow.</p>
+<div class="table-wrap"><table><thead><tr><th>Stage</th><th>Applies when</th><th>Rule</th></tr></thead><tbody><tr><td><strong>Pre-release (current)</strong></td><td>No published Fab listing exists</td><td>Breaking changes are permitted and expected. Every intentional change is recorded in <code>Docs/API_CHANGE_LEDGER.md</code>.</td></tr><tr><td><strong>Released</strong></td><td>From the first published Fab listing, tagged <code>v1.0.0</code></td><td>The compatibility rules below apply in full; breaking changes require a major version.</td></tr></tbody></table></div>
+<p>UE 5.8 is the primary engine target. <code>Config/PublicHeaders.v1.txt</code> is the authoritative public-header
+path manifest; <code>RTS.Packaging.PublicApiFreeze</code> verifies that manifest, a normalized fingerprint of
+every public C++ header, and a canonical fingerprint of the reflected Unreal contract. Both
+fingerprints are change detectors and they operate in <strong>both</strong> stages. What the stage decides is what
+you may do once one of them moves.</p>
+<h2 id="what-the-fingerprints-cover">What the fingerprints cover</h2>
+<p>The reflection fingerprint covers plugin and examples classes, structs, enums, Blueprint-visible
+functions, events, properties, parameter names/types/flags/defaults, and customer-relevant metadata
+such as categories, display names, world context, advanced pins, auto-created references, and
+request-result labels.</p>
+<p>The two fingerprints are independent, and their disagreement is diagnostic:</p>
+<ul><li><strong>Header hash moves, reflected hash does not</strong> — header text changed, contract did not: a comment,
+formatting, or a private member. Safe.</li><li><strong>Both move</strong> — a real contract change. Requires a ledger entry.</li><li><strong>Reflected hash moves, header hash does not</strong> — should be impossible. Investigate before
+proceeding: it implies a contract change arriving from somewhere other than the public headers.</li></ul>
+<p>Before release, a separate test project that contains only the installed plugin compiles every
+header listed in <code>CPP_API_SURFACE.md</code> on its own, plus a game module with real gameplay and HUD
+extensions, and packages and plays it. This catches a header that no longer compiles by itself or an
+extension point that no longer works.</p>
+<h2 id="pre-release-rules-current-stage">Pre-release rules (current stage)</h2>
+<ol><li>Breaking changes are allowed. Prefer making the structure right over preserving a signature that
+no customer has ever compiled against.</li><li>Every intentional public API change gets a <code>Docs/API_CHANGE_LEDGER.md</code> entry before the fingerprint is
+re-baselined: what changed, why, and what a customer would have had to do about it.</li><li>Re-baseline a fingerprint only in the same commit as the change that justifies it, with the reason
+in the commit message.</li><li>Obsolete experiments are removed, not deprecated. There is no installed base to protect, and
+carrying dead API into <code>v1.0.0</code> makes it permanent.</li><li>Renaming a reflected type still requires an Unreal core redirect. Saved assets reference these
+types, so <strong>asset</strong> compatibility matters even where <strong>source</strong> compatibility does not.</li></ol>
+<h2 id="released-rules-from-v100">Released rules (from v1.0.0)</h2>
+<ul><li>Patch releases may fix implementation, performance, security, diagnostics, documentation, or
+defaults only when existing serialized assets and source integrations remain compatible.</li><li>Additive APIs require a deliberate manifest/fingerprint update, a customer-use example, external
+consumer compilation, Blueprint metadata audit, cook/package proof, and release-note entry.</li><li>Renaming, moving, removing, changing parameter order/type/default, narrowing availability,
+changing authority or purity, or changing a return contract is breaking. It requires a major API
+version unless an Unreal redirect and migration preserve both assets and supported source use.</li><li>Deprecated APIs remain functional for the documented deprecation window after release.</li><li>Public paths are case-sensitive contract values even on case-insensitive development hosts.</li><li>Native-only signature changes that are not represented by reflection still require review against
+<code>CPP_API_SURFACE.md</code>, the external consumer recipes, and all feature extension examples.</li></ul>
+<h2 id="intentional-change-procedure">Intentional change procedure</h2>
+<ol><li>Explain the customer need and classify the change as compatible, additive, or breaking.</li><li>Update the implementation, relevant feature contract, and extension example together.</li><li>Regenerate the header manifest only for an intentional path addition/removal.</li><li>Update the reflected fingerprint only after reviewing its canonical API diff.</li><li>Run strict UE 5.8 compilation, the external consumer module, Blueprint API audit, complete source
+automation, BuildPlugin, installed automation, cook, and supported packaged-play gates required by
+the release tracker.</li><li>Record migration and release notes before publishing the release candidate.</li></ol>
+<p>Never update a baseline merely to make the freeze test green. A changed fingerprint is a review
+trigger, not generated noise — in either stage.</p>
+<h2 id="transition-to-the-released-stage">Transition to the released stage</h2>
+<p>At first Fab publication: tag <code>v1.0.0</code>, record the shipped fingerprints in <code>Docs/API_CHANGE_LEDGER.md</code> as
+the v1 baseline, and replace the pre-release section above with a pointer to that tag. From that
+moment the released rules are the only rules.</p>
+</main>
+<footer>Real-Time Strategy plugin 1.3.0. This page is generated from <code>Docs/PUBLIC_API_CHANGE_POLICY.md</code>.</footer>
+</body>
+</html>
