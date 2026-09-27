@@ -137,6 +137,10 @@ pawn cancel each other's moves:
   events rather than the tree.
 - **Hold Position.** The unit never moves and fires at the best target in range at its weapon's
   cooldown.
+- **Build.** The controller walks the builder to a point on the ring around the site it can reach
+  completely (a refinery's geyser sits off the navigation mesh, so the builder never walks to the
+  site's centre), then places the building there. If the player cannot pay yet, the builder waits at
+  the site and builds as soon as they can.
 - **Return cargo, repair, the approach to a resource, and flight.**
 
 Any new order hands the pawn back to the tree at once.

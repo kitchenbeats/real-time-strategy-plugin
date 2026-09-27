@@ -96,6 +96,12 @@ legal worker attack target: airborne or invulnerable enemies cannot inflate a gr
 and air-only defenders cannot reduce it. Stationary defenders relieve workers only when their
 compatible attack can actually reach that intruder. There is no fixed worker draft floor.
 
+Workers join only a fight their base can win. When the intruders' strength exceeds 1.25 times the
+strength of everything at the base that can answer them (local defenders and the workers that
+could be drafted), the bot declines the draft and keeps its workers mining. Each declined draft is
+counted (`GetTotalDeclinedWorkerDrafts`), and MatchCheck's `WorkerSlaughter` watchdog accepts it as
+a defense response.
+
 Each drafted worker retains its economic anchor and issued target. When military relief arrives,
 a target leaves, or the defender crosses the 2,500 cm economic-region boundary, excess or invalid
 drafts are released. Release cancels only the exact defense attack issued by this subsystem;

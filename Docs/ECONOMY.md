@@ -58,6 +58,11 @@ worker, controller, source, and resource pool is revalidated after extensible ga
 order callbacks, so a callback that removes an actor cannot leave the remaining distribution pass
 holding stale gameplay objects.
 
+It sends workers to sources within 2,500 cm of one of the player's ready drop-offs. When every base
+is mined out, it long-distance mines instead, as StarCraft players do: the workers go to the
+nearest remaining line of sources that no enemy drop-off stands beside, and carry each load home to
+the nearest drop-off, until the player has a new base.
+
 Harvest start returns whether source admission and required container entry actually committed.
 Start, stop, extraction, cargo mutation, and deposit reject callback re-entry. A deposit reserves
 cargo before crediting the wallet and restores any amount a custom wallet declines, so failure

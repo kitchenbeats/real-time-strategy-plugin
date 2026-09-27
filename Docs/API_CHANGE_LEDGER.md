@@ -12,6 +12,41 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Builders walk to the site's ring, mined-out bases mine elsewhere, declined drafts count
+
+**Date:** 2026-09-26 · **Stage:** pre-release
+
+A builder ordered to place a building is now walked by `RTSPawnAIController` itself (a new
+`EDirectMover::Construct`, `TickConstructionApproach`, `ResetConstructionApproach`,
+`bConstructionMoveIssued`, `bConstructionHolding`) to a point on the site's staging ring that it can
+reach completely, and begins construction there; while the player cannot pay it waits at the site.
+Before, the behavior tree walked it to the site's centre, which for a refinery is the geyser, off the
+navigation mesh: the move failed at once, the builder stood still, and only the 10-second stall
+recovery (removed) got it building, about 24 seconds late in every watched match. The ring search is
+shared with the gather and return approach (`RTSEconomyNavigation::FindConstructionApproach`).
+
+The AI now counts the fights it declines to draft workers into
+(`URTSAIBotSubsystem::GetTotalDeclinedWorkerDrafts`, `FRTSSquadSystem::GetTotalDeclinedWorkerDrafts`).
+MatchCheck's `WorkerSlaughter` accepts a declined draft as a defense response, like a draft, and no
+longer counts deaths to a killer the worker's weapon cannot hit. A watched AI match failed it for a
+bot that correctly kept its workers mining against 2,000 strength of attackers (Bombers and Artillery)
+with 180 of its own. `FPlayerWatchState` gains `AtHomeDeathsToUnanswerableAttackers` and
+`LastDeclinedTotal`; the verdict gains `declinedDrafts` and `deathsToUnanswerableAttackers`.
+`Distribute Idle Workers` long-distance mines once every base is mined out: the nearest remaining
+line of sources that no enemy drop-off stands beside. Before, a mined-out player's whole workforce
+stood idle for the rest of the match (MatchCheck `EconomyLiveness` in a watched four-player match).
+
+Customer impact: none for game code; a behavior tree customized to walk builders is no longer used
+for that leg.
+
+Reviewed public-header fingerprint: `B20DCD21D793D6D19A7C97F4220B6FA7BE836784` (182 paths).
+Reflection: `20BB6C7B111A2892EFDE8388174865F19DE73C0C` (unchanged).
+Coverage: `RTS.Diagnostics.MatchCheck.WorkerSlaughterOccupation` (new air-raid case),
+`RTS.AI.Economy.MinedOutBaseMinesTheNearestSafeLine` (new), the construction and economy
+integration suites, and watched AI matches on both starter maps.
+
+---
+
 ## Match screenshots, and worker deaths judged when they happen
 
 **Date:** 2026-09-26 · **Stage:** pre-release

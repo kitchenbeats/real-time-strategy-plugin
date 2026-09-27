@@ -48,9 +48,10 @@ and rematches; a request that does not fit fails before the map is set up.
 
 Matches started without the setup screen (the `rts.skirmish.start` console command, a dedicated
 server, an automated check) read these travel options on the map URL: `?NumBases=` (players,
-human and AI), `?StartingWorkers=`, `?MinHumanPlayers=`, and `?AIDifficulty=Passive`, `Easy` or
-`Normal` (default `Normal`). For example
-`L_RTSComplete_Starter?AIDifficulty=Easy`.
+human and AI), `?StartingWorkers=`, `?MinHumanPlayers=`, `?AIDifficulty=Passive`, `Easy` or
+`Normal` (default `Normal`), and `?HumanRole=Observer` to fill every base with AI and let the
+humans watch (the default, `Player`, gives humans the first bases). For example
+`L_RTSComplete_Starter?AIDifficulty=Easy` or `L_RTSComplete_Starter?HumanRole=Observer`.
 
 The island is made of engine cube meshes with a map-owned copy of the plugin's placeholder material,
 plus a volume that removes the same area from the navigation mesh. For your own terrain, work in

@@ -98,14 +98,16 @@ CI (exit codes). This document defines their shared runtime contract.
      rich-idle candidate across the complete run, including recovered candidates.
    - `TeleportDetector` — any pawn displaced farther than MaxSpeed × window (the builder-teleport class)
    - `WorkerSlaughter` — a roster with draft-capable workers suffers repeated worker deaths at
-     home without a new draft event. Each death is judged when it happens, with the shared
-     strategic-collapse policy: a worker lost while a materially superior hostile force occupies
-     the player's buildings had no defense to join, so that death does not extend the unanswered
-     run, and the attackers leaving later does not turn it into one. The verdict's per-player
-     `workerDefenseWatch` records the unanswered count (`deathsSinceLastNewDraft`), the deaths
-     during an occupied collapse (`deathsDuringOccupiedCollapse`), and the last classified local
-     hostile/global friendly strength. This measures draft-event progress, not whether every
-     casualty could have been saved. Unarmed worker deaths remain in telemetry without arming it.
+     home with no defense response. Each death is judged when it happens. The bot responds either
+     by drafting workers or by declining the draft (it judged the fight at that base unwinnable and
+     kept its workers mining); either ends the unanswered run. A death does not extend the run when
+     the worker's weapon could not hit its killer (a flyer against a ground-only tool), or when a
+     materially superior hostile force occupied the player's buildings under the shared
+     strategic-collapse policy; the attackers leaving later does not turn it into one. The
+     verdict's per-player `workerDefenseWatch` records the unanswered count
+     (`deathsSinceLastNewDraft`), `declinedDrafts`, `deathsDuringOccupiedCollapse`,
+     `deathsToUnanswerableAttackers`, and the last classified local hostile/global friendly
+     strength. Unarmed worker deaths remain in telemetry without arming it.
    - `StuckStorm` — no-progress order voids past threshold/min
    - `WallClock` — the run did not finish in wall-clock time: three times the expected run (match
      length × repeats ÷ speed) plus any performance sample and 15 minutes, or
