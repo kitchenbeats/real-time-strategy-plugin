@@ -152,6 +152,12 @@ A move the player gives a group is checked once for the whole group: a destinati
 cannot reach (inside walls, across a cliff, off the map's walkable area) becomes the closest point
 it can reach. Attack-move and patrol destinations are checked the same way, for the AI too.
 
+Units path by size class. With no navigation agents configured in the project, the plugin builds two
+navigation meshes: a small one (30 cm) for infantry and a large one (60 cm) for vehicles and other
+bulky units. Each unit uses the widest class no wider than itself, so a gap a little wider than a
+Rifleman is open to Riflemen but never to a tank. Regenerate a map after changing its units' sizes or
+the project's navigation agents.
+
 Group moves follow StarCraft's "magic box". Clicking outside the area the selected units cover
 moves the group as it stands: each unit keeps its place relative to the others. Clicking inside
 that area gathers the group on the point: units heading for one destination stop when they touch a

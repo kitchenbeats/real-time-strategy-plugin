@@ -12,6 +12,35 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Navigation size classes
+
+**Date:** 2026-09-26 · **Stage:** pre-release
+
+When a project configures no navigation agents, `URTSNavigationSystem` now supplies two size classes
+instead of one engine-default agent: `RTSSmall` (30 cm, for infantry) and `RTSLarge` (60 cm, for
+vehicles and other bulky units), `SmallAgentRadius` and `LargeAgentRadius`. `ARTSRecastNavMesh` uses
+15 cm cells instead of the engine's stock 19 cm (only when the project has not set its own). Each ground
+unit paths on the widest class no wider than itself, assigned when its pawn controller possesses it, so
+a gap a little wider than a Rifleman (80 cm) is open to Riflemen while a 60 cm vehicle never routes
+through it; before, the single 34 cm agent on 19 cm cells closed that gap to everyone and let large
+units route through gaps they could not fit. A unit whose own island map is needed uses its class's
+mesh (`URTSNavigationIslands::GetNavDataFor`).
+
+While units queue through a single-file gap, the movement subsystem no longer lets them slip through
+the friend walking ahead of them: a unit yields past friends only in a real jam (a friend coming the
+other way, standing or holding), not in a queue.
+
+Both bundled starter maps are regenerated with a navigation mesh per class. Customer impact: maps
+generated before this change hold one navigation mesh and must be regenerated (or rebuilt) to get the
+second class; projects that configure their own `SupportedAgents` keep them unchanged.
+
+Reviewed public-header fingerprint: `C69C7137F5DD0FB27010E641D57A162B79D54456` (182 paths).
+Reflection: `2CBC712C3BF097791F3AA98FA36A42520D6B0D5E` (unchanged).
+Coverage: `RTS.Packaging.BundledNavigationSizeClasses`, `RTS.Packaging.BundledStarterReference`, the
+size-class cases in `RTS.Integration.GeneratedStaticNavigationTraversal` and
+`RTS.Integration.NavigationScenarioMatrix`, and the
+movement benchmark (`choke_gap_80` now passable, `mixed_choke`, every scenario).
+
 ## Group moves, reachability islands and buildings that make room
 
 **Date:** 2026-09-26 · **Stage:** pre-release

@@ -138,7 +138,9 @@ Other options: `-RTSNavBenchUnits=<n>` overrides a scenario's unit count,
 `-RTSNavBenchOutput=<directory>` the report folder, `-RTSNavBenchContent=<folder>` the Content Set
 the units and buildings load from, `-RTSNavBenchCsv` records a CSV profile of the run
 (`navbench_<scenario>.csv`, with the RTS category enabled: `MovementSettle`, `NavigationIslands`, and
-the engine's own timings), and `-RTSNavBenchKeepAlive` keeps the process running. For a
+the engine's own timings), `-RTSNavBenchFlowPolicy=<StockNavigation|MilitaryOnly|AllPawns>` gives every
+unit that path policy (to compare flow-field paths with stock navigation), and `-RTSNavBenchKeepAlive`
+keeps the process running. For a
 rendered run, `-RTSNavBenchView` centres the camera on the scenario and `-RTSNavBenchShots=<seconds>`
 saves a screenshot at that interval (from the renderer, so the window does not need focus).
 
