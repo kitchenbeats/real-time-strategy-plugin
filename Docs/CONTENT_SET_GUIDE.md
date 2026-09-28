@@ -91,7 +91,7 @@ its fields. The identity fields show first; the rest are grouped:
 | **Economy** | **Gathers** (which resources it collects, how much per trip, how fast), **Can Repair** and the repair rate and cost. |
 | **Production** | Training cost, whether it is paid up front or over time, **Production Time**, **Supply Cost** and **Required Buildings**. |
 | **Construction** | **Can Build** and the list of buildings it can construct. |
-| **Abilities** | An energy pool and spells such as healing or area damage. Each ability gets a command card button. |
+| **Abilities** | An energy pool and spells such as healing or area damage. Each ability gets a command card button. Tick **Auto Cast** for a spell the unit casts by itself, such as a medic's heal. |
 | **Blueprint** | **Custom Blueprint** and **Replace With Class**. See [Add Blueprint logic](#add-blueprint-logic-to-a-unit-or-building). |
 
 **Worker Fights Back** controls what a gathering unit does when it or a nearby ally is attacked.

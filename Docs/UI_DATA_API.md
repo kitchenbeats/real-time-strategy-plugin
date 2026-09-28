@@ -358,6 +358,7 @@ through their output error text; retain the status delegate for asynchronous fai
 |---|---|---|
 | Supply used/cap | 4 Hz | Sum over replicated actors; no aggregate delegate exists (and a per-actor one would be noisier than the poll) |
 | Control groups | 4 Hz | Purely local player data; members die without any group-scoped event |
+| Idle workers | 4 Hz | The server refreshes the list four times a second; a worker can die between refreshes, so the button re-checks who is alive |
 | Match clock | 1 Hz | It's a clock |
 | Cooldown sweeps / progress interpolation | UI tick, local | Animation smoothing between authoritative events |
 

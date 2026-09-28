@@ -142,6 +142,13 @@ UI can bind `OnTargetingStarted` / `OnTargetingEnded` and call `ConfirmTargeting
 interaction layer and call `IssueAbilityOrder` with a unit target or ground location. Self abilities
 are normalized to the caster on the server, so client-supplied target data cannot redirect them.
 
+An ability with **Auto Cast** set casts itself on the server whenever it is ready, as Brood War medics
+heal: a heal goes to the most-hurt other unit in range that is missing at least half of what the heal
+restores (never a building; workers repair those), a damaging spell to the nearest enemy in range the
+caster's player can see. The player can still cast it by hand. `FindAutoCastTarget` returns the unit
+it would pick; the AI casts its other abilities on the same choice. The bundled Medic's Heal is Auto
+Cast.
+
 ## Extension points
 
 `RTSAttackComponent` and `RTSStanceComponent` are Blueprintable. Override their Blueprint Native

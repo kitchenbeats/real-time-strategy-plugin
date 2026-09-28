@@ -80,7 +80,7 @@ Generate writes into the Content Set's output folders (**Advanced > Generated Co
 - `DA_RTSGenerationManifest_<ContentSetId>`, the record of every asset Generate owns.
 
 `ARTSHUD` creates the full in-game HUD for each player (resources, match clock, control groups,
-selection panel, command card, notifications, minimap) without any project UI Blueprint.
+selection panel, command card, notifications, minimap, idle-worker button) without any project UI Blueprint.
 
 Turn off **Match Setup > Generate Map** to generate only the unit, building and resource Blueprints.
 

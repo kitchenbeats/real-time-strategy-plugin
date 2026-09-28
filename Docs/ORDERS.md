@@ -129,11 +129,28 @@ Blueprint. Call the parent policy when extending the built-in allow-list.
 
 A drag box selects the player's own units when it holds any, otherwise their own buildings, and
 otherwise a single other actor to inspect, so a box over the mineral line picks up the workers and
-not the minerals. An order only one unit carries out, such as placing a building, goes to the
+not the minerals. As in StarCraft, Shift+click adds a unit or takes a selected one out again,
+Shift+drag adds everything in the box, and double-click or Ctrl+click selects every unit of that type
+on screen. An order only one unit carries out, such as placing a building, goes to the
 selected unit closest to the target that is not already constructing something, so a selection that
 includes a busy builder never pulls it off its site. A worker's command card keeps **Return Cargo**
 in its slot (greyed while nobody carries anything), so the build buttons after it, and their hotkeys,
 never move.
+
+**Quick-select keys**, as in StarCraft II. F1 selects the next worker with no order and centers the
+camera on it, Ctrl+F1 selects every idle worker, and a button above the minimap shows how many there
+are (click for the next one, Ctrl+click for all; hidden while none is idle). F2 selects the whole
+army, every combat unit without workers or buildings; press it twice quickly to center the camera on
+it, as with a control group. Backspace moves the camera to the next town hall and keeps the selection.
+`URTSQuickSelectComponent`, created on every `ARTSPlayerController`,
+keeps the idle-worker list on the server and replicates it to the owning player, and exposes **Select
+Next Idle Worker**, **Select All Idle Workers**, **Select Army**, **Cycle Base Camera**, **Get Idle Workers** and **On Idle
+Workers Changed** to Blueprint for a custom HUD. Replace the console's **Idle Worker Button Class** to
+reskin the button, or clear it to remove it.
+
+Engine debug keys that share a key with the RTS controls (F1 wireframe, F2 unlit, F5 shader
+complexity, F9 screenshot) are switched off for that player in development builds, so those keys only
+do what the RTS controls say. Debug keys on other keys keep working.
 
 ## How units move under an order
 

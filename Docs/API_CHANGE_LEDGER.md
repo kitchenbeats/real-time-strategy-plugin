@@ -12,6 +12,49 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## StarCraft controls: quick-select keys, base camera, selection gestures, Auto Cast, debug keys
+
+**Date:** 2026-09-28 · **Stage:** pre-release
+
+- **StarCraft II's quick-select keys.** New `URTSQuickSelectComponent`, created on every
+  `ARTSPlayerController`. The server keeps the player's idle workers (gatherers with no order) and
+  replicates them to that player only. `SelectNextIdleWorker` (F1) selects the next one and centers
+  the camera on it, `SelectAllIdleWorkers` (Ctrl+F1) selects all, and `SelectArmy` (F2) selects every
+  combat unit, without workers or buildings (twice quickly centers the camera). `CycleBaseCamera`
+  (Backspace) moves the camera to the next town hall without changing the selection.
+  `GetIdleWorkers`, `GetIdleWorkerCount` and `OnIdleWorkersChanged` serve custom HUDs. New input
+  actions `IA_RTS_SelectIdleWorker`, `IA_RTS_SelectAllIdleWorkers`, `IA_RTS_SelectArmy` and
+  `IA_RTS_CycleBaseCamera`; `IMC_RTSBase` has 90 mappings (was 86). The component loads and binds its own actions, so a project whose input
+  assets lack them keeps every other control and simply has no quick-select keys.
+- **Idle-worker button.** New `URTSIdleWorkerButtonWidget` above the minimap, with the worker portrait
+  and the count; `URTSConsoleWidget::IdleWorkerButtonClass` swaps or removes it.
+- **Auto Cast abilities, as Brood War medics heal.** New `FRTSAbility::bAutoCast`: the ability casts
+  itself on the server whenever it is ready, a heal on the most-hurt other unit in range missing at
+  least half the heal (never a building), a damaging spell on the nearest visible enemy in range. New
+  `URTSAbilityComponent::FindAutoCastTarget`; the AI casts its other abilities on the same choice, so
+  AI damage spells now need the target in sight and AI heals no longer spend energy on scratches. The
+  bundled Medic's Heal is Auto Cast; before, a player's medics healed nobody unless ordered each time.
+- **Selection gestures, as in StarCraft.** Shift+click now takes an already selected unit out again
+  (it only added), and Ctrl+click selects every unit of the clicked type on screen (it added or
+  removed one unit). `ARTSPlayerController`'s Shift and Ctrl hotkey actions are unchanged.
+- **Which resource is short.** New `URTSPlayerResourcesComponent::DescribeShortfall`: an order the
+  player cannot pay for now says "Not enough minerals." or "Not enough gas.", as StarCraft does,
+  instead of "Not enough resources."
+- **Engine debug keys.** In development builds and play-in-editor, Unreal's stock debug bindings ran
+  beside game input: F5 (camera location 1) also switched the view to shader complexity and F9 took a
+  screenshot. The controller now disables any debug binding on a key its mapping context uses.
+
+Customer impact: none required. Projects with their own mapping context add F1, Ctrl+F1, F2 and
+Backspace mappings to the four new actions to get the keys. Existing abilities keep Auto Cast off.
+
+Reviewed public-header fingerprint: `8BA546A5DCA88E1E892FC5C78C826972E7F5F927` (184 paths).
+Reflection: `43A57F2F59385A965DEECECD7EAB155195DDE9A5`.
+Coverage: `RTS.UI.QuickSelect.IdleWorkers`, `.Army` and `.BaseCamera` (new),
+`RTS.Combat.Abilities.HealingLivingTargets`, `RTS.Economy.ShortfallNamesTheResource` and `RTS.UI.Selection.StarCraftGestures` (new),
+`RTS.Input.BundledAssetsContract`, `RTS.Packaging.CommercialContentManifest`, UI suites.
+
+---
+
 ## Refinery placement, status chip, a gentler Easy AI, and fixes from mouse play
 
 **Date:** 2026-09-27 · **Stage:** pre-release
