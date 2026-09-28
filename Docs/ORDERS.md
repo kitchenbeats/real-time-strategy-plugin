@@ -131,7 +131,12 @@ A drag box selects the player's own units when it holds any, otherwise their own
 otherwise a single other actor to inspect, so a box over the mineral line picks up the workers and
 not the minerals. As in StarCraft, Shift+click adds a unit or takes a selected one out again,
 Shift+drag adds everything in the box, and double-click or Ctrl+click selects every unit of that type
-on screen. An order only one unit carries out, such as placing a building, goes to the
+on screen (Command+click on a Mac, where Control+click is a right click). Hold Position and Patrol
+buttons appear for units that can walk, never for workers or buildings.
+
+Shift queues orders, buildings included: with Shift held, each placed building is queued for the
+builder, a ghost marks its spot, and placement goes on until Shift is let go. A worker that is
+mining delivers the cargo it carries and then follows its queue. An order only one unit carries out, such as placing a building, goes to the
 selected unit closest to the target that is not already constructing something, so a selection that
 includes a busy builder never pulls it off its site. A worker's command card keeps **Return Cargo**
 in its slot (greyed while nobody carries anything), so the build buttons after it, and their hotkeys,

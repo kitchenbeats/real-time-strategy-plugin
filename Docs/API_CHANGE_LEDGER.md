@@ -12,6 +12,37 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Shift placement, orders queued behind mining, Command as Ctrl on a Mac, Hold and Patrol buttons
+
+**Date:** 2026-09-28 · **Stage:** pre-release
+
+Found by mouse play overnight, each fixed as StarCraft does it.
+
+- **Shift placement, as in StarCraft II.** Placing a building with Shift held queues it for the
+  builder and keeps placement going; a ghost stays on each queued spot, no later building may
+  overlap one, and letting go of Shift ends placement. New `ARTSBuildingCursor::AddPlannedSite`,
+  `IsClearOfPlannedSites` and `HasPlannedSites`.
+- **Orders queued behind mining ran never.** Mining never ends by itself, so anything queued behind
+  it with Shift (a building, a move) waited forever. A worker carrying cargo now delivers it and then
+  follows the queue; an empty-handed one follows it at once, as in StarCraft II. A worker that
+  delivers with orders queued moves on to them instead of mining again.
+- **Command works as Ctrl on a Mac.** macOS turns Control+click into a right click, so Ctrl+click
+  could never select a unit type there; `IMC_RTSBase` maps Left Command to the Ctrl action as well
+  (91 mappings). Key hints name Command only on a Mac.
+- **Hold Position and Patrol on the command card** for units that can walk, as in Brood War; never
+  for workers, buildings, towers or a deployed siege unit. Their keys worked before but had no
+  buttons.
+
+Customer impact: none. Projects with their own mapping context may add Left Command to their Ctrl
+action for Mac players.
+
+Reviewed public-header fingerprint: `779102F0EFB4791C0AC648780C8BEAFD3A0C79D7` (184 paths).
+Reflection: `43A57F2F59385A965DEECECD7EAB155195DDE9A5` (unchanged).
+Coverage: `RTS.Construction.ShiftQueuedPlacement`, `RTS.Orders.QueuedAfterMining` and
+`RTS.UI.CommandCard.BroodWarOrders` (new), `RTS.Input.BundledAssetsContract`, mouse play.
+
+---
+
 ## StarCraft controls: quick-select keys, base camera, selection gestures, Auto Cast, debug keys
 
 **Date:** 2026-09-28 · **Stage:** pre-release
