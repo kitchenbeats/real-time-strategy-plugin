@@ -4,6 +4,13 @@ The default construction and production components provide server-authoritative 
 placement, builder assignment, immediate or over-time costs, parallel production queues, supply
 and technology gates, cancellation refunds, spawned-product ownership, and rally points.
 
+## Training from several buildings
+
+With several production buildings selected, each unit the player trains goes to the selected building
+that can make it with the shortest queue, as in StarCraft II, so pressing the key five times spreads
+five units over the buildings instead of stacking them in one
+(`ARTSPlayerController::GetSelectedProductionActorFor`).
+
 ## Blueprint extension points
 
 `RTSBuilderComponent`, `RTSConstructionSiteComponent`, and `RTSProductionComponent` are

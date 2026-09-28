@@ -173,6 +173,8 @@ pawn cancel each other's moves:
   completely (a refinery's geyser sits off the navigation mesh, so the builder never walks to the
   site's centre), then places the building there. If the player cannot pay yet, the builder waits at
   the site and builds as soon as they can.
+- **Use Ability.** The controller walks a caster into range of its target and casts, then the
+  order ends (or earlier, when the caster runs out of energy or the target is gone).
 - **Return cargo, repair, the approach to a resource, and flight.**
 
 Any new order hands the pawn back to the tree at once.

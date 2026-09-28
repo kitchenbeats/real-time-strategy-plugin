@@ -141,13 +141,19 @@ right-click cancellation, invalid-target retry, and minimap support. A replaceme
 UI can bind `OnTargetingStarted` / `OnTargetingEnded` and call `ConfirmTargetingAt`, or bypass the
 interaction layer and call `IssueAbilityOrder` with a unit target or ground location. Self abilities
 are normalized to the caster on the server, so client-supplied target data cannot redirect them.
+A unit told to cast on a target out of range walks into range and then casts, as StarCraft casters
+do (`RTSPawnAIController::IssueCastAbilityOrder`, which runs the **Use Ability** orders
+`URTSCastAbilityOnUnitOrder` and `URTSCastAbilityAtLocationOrder`); a target the ability could never
+take, such as a heal on an enemy, is refused at once. A cast already in range happens immediately
+and does not interrupt what the unit was doing.
 
 An ability with **Auto Cast** set casts itself on the server whenever it is ready, as Brood War medics
 heal: a heal goes to the most-hurt other unit in range that is missing at least half of what the heal
 restores (never a building; workers repair those), a damaging spell to the nearest enemy in range the
 caster's player can see. The player can still cast it by hand. `FindAutoCastTarget` returns the unit
-it would pick; the AI casts its other abilities on the same choice. The bundled Medic's Heal is Auto
-Cast.
+it would pick; the AI casts its other abilities on the same choice. An idle unit with an Auto Cast
+heal also walks over to a wounded ally up to twice the heal's range away, as Brood War medics do; a
+damaging spell never sends an idle caster after enemies. The bundled Medic's Heal is Auto Cast.
 
 ## Extension points
 

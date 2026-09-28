@@ -12,6 +12,36 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Casters walk into range, idle medics heal, training spreads over buildings; unity guard
+
+**Date:** 2026-09-28 · **Stage:** pre-release
+
+- **Casting out of range, as in StarCraft.** A spell on a target out of range used to do nothing; the
+  caster now walks into range and casts. New orders `URTSCastAbilityOnUnitOrder` and
+  `URTSCastAbilityAtLocationOrder` (the ability index is the order's Index), run by the controller;
+  new `ARTSPawnAIController::IssueCastAbilityOrder` (Blueprint-callable, authority only), which the
+  player controller's ability requests now use for units. New
+  `URTSAbilityComponent::CanCastOn`, CanCastAt with the range check optional, so a target the ability
+  can never take is refused before the walk.
+- **Idle medics heal nearby wounded, as in Brood War.** An idle unit with an Auto Cast heal walks to a
+  wounded ally up to twice the heal's range away and heals it. New
+  `URTSAbilityComponent::FindAutoCastTargetWithin`.
+- **Training from several buildings, as in StarCraft II.** With several buildings selected, each unit
+  trained goes to the one with the shortest queue; it used to go to the first one every time.
+- **Unity builds.** A file-local constant in the idle-worker button shadowed a local in the info
+  panel when Unreal compiled both in one unity file (`-Wshadow` is an error), and two editor files had
+  the same latent clash. The names are now file-specific, and `Tools/ci/check_unity_collisions.sh`
+  also fails on a file-local variable that another file of the module declares as a local.
+
+Customer impact: none.
+
+Reviewed public-header fingerprint: `BB084E460DF752EF96098A86B4E889E3FF8E6A05` (185 paths).
+Reflection: `EEE4F07A3E1831ADB8E6255F60690BF38DF90D16`.
+Coverage: `RTS.Combat.Abilities.WalkIntoRangeToCast`, `RTS.Combat.Abilities.IdleMedicWalksToHeal` and
+`RTS.Production.SelectedBuildingsShareTraining` (new), combat suites.
+
+---
+
 ## Shift placement, orders queued behind mining, Command as Ctrl on a Mac, Hold and Patrol buttons
 
 **Date:** 2026-09-28 · **Stage:** pre-release
