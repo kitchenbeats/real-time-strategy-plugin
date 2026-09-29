@@ -59,7 +59,7 @@ and the **Real-Time Strategy** section of the **Tools** menu.
    - **Your faction** is fixed while the game has one faction.
    - **AI opponents** sets how many computer players join. **None (sandbox)** gives you an empty
      map to try things out.
-   - **AI difficulty** is **Passive** (builds up but never attacks), **Easy** or **Normal**. It is
+   - **AI difficulty** is **Passive** (builds up but never attacks), **Easy**, **Normal** or **Hard**. It is
      available when there is at least one AI opponent.
 5. Choose **Start match**.
 

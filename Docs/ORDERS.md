@@ -173,6 +173,9 @@ pawn cancel each other's moves:
   completely (a refinery's geyser sits off the navigation mesh, so the builder never walks to the
   site's centre), then places the building there. If the player cannot pay yet, the builder waits at
   the site and builds as soon as they can.
+- **Move on a unit.** Moving onto a unit that can walk (right-click a friendly unit, M on any unit,
+  or a production rally set on a unit) follows it until the next order, as in StarCraft, and stops
+  when that unit dies. A move onto a building is an ordinary move.
 - **Use Ability.** The controller walks a caster into range of its target and casts, then the
   order ends (or earlier, when the caster runs out of energy or the target is gone).
 - **Return cargo, repair, the approach to a resource, and flight.**

@@ -12,6 +12,32 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## A move on a unit follows it; a Hard AI
+
+**Date:** 2026-09-28 · **Stage:** pre-release
+
+- **Follow, as in StarCraft.** A Move order aimed at a unit that can walk (a right-click on a friendly
+  unit, M on any unit, or a building's rally set on a unit) used to walk to where that unit stood
+  when the order was given. The unit now follows it until the next order, stands beside it without
+  the no-progress watchdog voiding the order, and stops when it dies. A move onto a building is
+  unchanged. No new API; `URTSMoveOrder`'s description already promised it.
+- **Hard AI.** `ERTSAIDifficulty` gains `Hard` after `Normal`, so saved values of the existing
+  entries keep their meaning. Hard plays Normal's rules without cheating, with a bigger economy
+  and larger attacks, as StarCraft's harder levels do: new `Config` properties on
+  `URTSAIBotSubsystem`: `HardWorkerTargetMultiplier` (1.5), `HardMaxTownhalls` (3) and
+  `HardAttackArmyMultiplier` (1.5), and a new `GetMaxTownhallsFor(Player)`. Hard's scout picks off
+  workers as Normal's does. The setup screen and `?AIDifficulty=Hard` offer it.
+
+Customer impact: additive. Code that switches over `ERTSAIDifficulty` without a `default` should
+handle `Hard`.
+
+Reviewed public-header fingerprint: `9C9899A36DE81A2BE1DB2003ED0495FAC1B3CCC3` (185 paths).
+Reflection: `400ABFAC378B0C84CF54BD5F4E9B6AF223884982`.
+Coverage: `RTS.Orders.MoveOnAUnitFollowsIt` (new), `RTS.AI.Difficulty.EconomyAndAttackPressure`
+(extended), order suites.
+
+---
+
 ## Casters walk into range, idle medics heal, training spreads over buildings; unity guard
 
 **Date:** 2026-09-28 · **Stage:** pre-release

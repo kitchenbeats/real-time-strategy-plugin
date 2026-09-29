@@ -174,7 +174,7 @@ Costs everywhere else refer to resources by Id.
   **Maximum Participants** of 2 and a **Playable Half Extent** of 6000 cm).
 - **Players.** **Factions** (see below), **Require Player Setup** (show the setup screen before
   the match; needs at least one faction), **Default AI Difficulty** (preselected on the setup
-  screen: **Passive**, **Easy** or **Normal**; the default is **Easy**), **Human Controls First Base**
+  screen: **Passive**, **Easy**, **Normal** or **Hard**; the default is **Easy**), **Human Controls First Base**
   (turn off to watch AI players fight each other) and **Minimum Human Players to Start** for
   multiplayer.
 - **Starting Bases.** **Starting Building**, **Starting Worker**, **Starting Workers Per Base**, the

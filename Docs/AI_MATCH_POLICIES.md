@@ -14,6 +14,7 @@ The setup screen (or `?AIDifficulty=` on the map URL) picks each AI opponent's d
 | **Passive** | Builds an economy and an army and defends itself, but never attacks. |
 | **Easy** | Trains 60% of the normal workforce (`EasyWorkerTargetShare`), builds one production building (`EasyTargetArmyBuildings`), attacks no earlier than 5:00 (`EasyEarliestAttackSeconds`) in small waves of about two thirds of Normal's attack size (`EasyAttackArmyMultiplier`), keeps no more than one wave before then, and never picks off workers with its scout. |
 | **Normal** | The full configuration: 16 workers, up to three production buildings, attacks once its army reaches six. |
+| **Hard** | Normal's rules, with no cheating, played harder: 1.5 times the workforce (`HardWorkerTargetMultiplier`), expands to three bases (`HardMaxTownhalls`), and attacks with 1.5 times Normal's army (`HardAttackArmyMultiplier`). |
 
 All of these are `Config` properties of `URTSAIBotSubsystem`, so a project retunes them in its
 `DefaultGame.ini` without code.
