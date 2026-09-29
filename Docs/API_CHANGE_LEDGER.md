@@ -21,6 +21,12 @@ Fingerprints are recorded as they stand *after* the change.
   quick-select keys, Auto Cast, Shift placement, casters walking into range, following a unit and
   the Hard AI.
 
+- On a Mac without a renderer (`-NullRHI`), the editor module adds an in-memory Engine config layer
+  so `LogMacTextInputMethodSystem` no longer fails tests: Unreal logs an error there whenever
+  keyboard focus leaves a text box the editor reopened (such as a Project Settings search box), and
+  it failed the first play-session test of every run. Nothing is written to disk; other platforms
+  and rendering sessions are unchanged. Test: `RTS.Editor.WindowlessMacTextInputIgnored`.
+
 Customer impact: none beyond the entries it collects. A project that pins the plugin folder name
 (`RealTimeStrategy-1.3.0`) renames it.
 
