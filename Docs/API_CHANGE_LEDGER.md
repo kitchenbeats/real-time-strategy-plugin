@@ -12,6 +12,28 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Workers keep mining while they defend; LTD2 combat strength
+
+**Date:** 2026-09-28 · **Stage:** pre-release
+
+- **Bug.** In the release gate's Blueprint-customer battle a losing AI drafted its whole workforce
+  as enemy Riflemen arrived one by one, and its economy stood still for a minute. Against anything
+  but a worker rush the worker draft now sends at most half of a base's workers, and the win
+  estimate counts only the workers it may send. Test: `RTS.AI.WorkerDefense.HalfTheWorkersKeepMining`.
+- `FRTSSquadSystem::GetUnitStrength` is now LTD2: the square root of current health times best
+  damage per second (it was health plus 8 times the best single hit, which ignored attack speed).
+  New `FRTSSquadSystem::GetDamagePerSecond(Unit)`. The `StrengthDamageWeight` constant is removed.
+
+Customer impact: code that read `FRTSSquadSystem::StrengthDamageWeight` no longer compiles; strength
+values have a different scale (only ratios between forces are meaningful).
+
+Reviewed public-header fingerprint: `F981BE5DBD36BBFBCFDBC3813C34988F678535C9` (185 paths).
+Reflection: `400ABFAC378B0C84CF54BD5F4E9B6AF223884982` (unchanged).
+Coverage: `RTS.AI.*` (29), the Blueprint-customer battle 8 times (16 matches, 0 alarms; before the
+fix 2 of 4 runs raised EconomyLiveness), Normal and Hard duels on the Complete starter.
+
+---
+
 ## Version 1.4.0
 
 **Date:** 2026-09-28 · **Stage:** pre-release
@@ -31,7 +53,7 @@ Fingerprints are recorded as they stand *after* the change.
 Customer impact: none beyond the entries it collects. A project that pins the plugin folder name
 (`RealTimeStrategy-1.3.0`) renames it.
 
-Reviewed public-header fingerprint: `9C9899A36DE81A2BE1DB2003ED0495FAC1B3CCC3` (185 paths; unchanged).
+Reviewed public-header fingerprint: `F981BE5DBD36BBFBCFDBC3813C34988F678535C9` (185 paths).
 Reflection: `400ABFAC378B0C84CF54BD5F4E9B6AF223884982` (unchanged).
 Coverage: `RTS.Packaging.CommercialContract` checks the version name.
 

@@ -110,9 +110,12 @@ legal worker attack target: airborne or invulnerable enemies cannot inflate a gr
 and air-only defenders cannot reduce it. Stationary defenders relieve workers only when their
 compatible attack can actually reach that intruder. There is no fixed worker draft floor.
 
-Workers join only a fight their base can win. When the intruders' strength exceeds 1.25 times the
-strength of everything at the base that can answer them (local defenders and the workers that
-could be drafted), the bot declines the draft and keeps its workers mining. Each declined draft is
+Workers join only a fight their base can win, and against anything but a worker rush at most half
+of a base's workers are drafted while the rest keep mining. Strength is LTD2, the estimate used in
+StarCraft AI research: the square root of a unit's current health times its best damage per second.
+When the intruders' strength exceeds 1.25 times the strength of everything at the base that can
+answer them (local defenders and the workers the draft may send), the bot declines the draft and
+keeps its workers mining. Each declined draft is
 counted (`GetTotalDeclinedWorkerDrafts`), and MatchCheck's `WorkerSlaughter` watchdog accepts it as
 a defense response. A region already fighting keeps fighting until the intruders grow to 1.6
 times its strength, so the decision does not flicker as workers pick up and drop off cargo
