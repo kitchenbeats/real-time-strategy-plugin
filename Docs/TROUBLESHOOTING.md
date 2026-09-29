@@ -13,7 +13,7 @@ category) and the **Message Log** (**Window > Message Log**, page **RTS Authorin
    version again from the Fab Library.
 3. If you copied the plugin into your project, `RealTimeStrategy.uplugin` must sit directly in
    `<YourProject>/Plugins/RealTimeStrategy`. An extra folder level (for example
-   `Plugins/RealTimeStrategy-1.3.0/RealTimeStrategy`) stops Unreal from finding it.
+   `Plugins/RealTimeStrategy-1.4.0/RealTimeStrategy`) stops Unreal from finding it.
 4. Keep exactly one copy of the plugin. Remove a project copy if it is also installed in the engine,
    and never mix files from two versions.
 5. In a C++ project, a failed build stops the plugin from loading. Build the project in your IDE and

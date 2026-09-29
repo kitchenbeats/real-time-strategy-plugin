@@ -12,6 +12,24 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Version 1.4.0
+
+**Date:** 2026-09-28 · **Stage:** pre-release
+
+- The plugin descriptor moves to `Version` 140, `VersionName` 1.4.0, for the tester build. It
+  collects every entry since 1.3.0, among them the StarCraft controls,
+  quick-select keys, Auto Cast, Shift placement, casters walking into range, following a unit and
+  the Hard AI.
+
+Customer impact: none beyond the entries it collects. A project that pins the plugin folder name
+(`RealTimeStrategy-1.3.0`) renames it.
+
+Reviewed public-header fingerprint: `9C9899A36DE81A2BE1DB2003ED0495FAC1B3CCC3` (185 paths; unchanged).
+Reflection: `400ABFAC378B0C84CF54BD5F4E9B6AF223884982` (unchanged).
+Coverage: `RTS.Packaging.CommercialContract` checks the version name.
+
+---
+
 ## A move on a unit follows it; a Hard AI
 
 **Date:** 2026-09-28 · **Stage:** pre-release
