@@ -67,8 +67,12 @@ These choices improve useful composition; they do not guarantee every authored u
 every match. Projects needing specific compositions can replace the strategy through the existing
 controller hooks below.
 
-The economy manager defers a new expansion when a hostile combat force controls either the proposed
-site or any existing townhall region. Each region is evaluated independently so a defended home base
+The bot expands while its live bases stay under its townhall limit; a base whose resources have run
+out does not count, so a mined-out AI expands again instead of starving. A builder that has not
+started its site within `BuilderTimeout` goes back to mining before another is sent.
+
+The economy manager defers a new expansion when a hostile combat force (armed units other than
+workers) controls either the proposed site or any existing townhall region. Each region is evaluated independently so a defended home base
 cannot hide an occupied remote expansion. Small patrols do not halt macro play, allied team units
 count as local defenders, and construction resumes after the decisive threat leaves. Extractor,
 supply, production, and technology construction uses the same last-moment check at its validated
@@ -140,7 +144,8 @@ orders and belong in authority-owned strategy code.
 
 Each AI player spends one worker on scouting, as CommandCenter does. A second goes out only when the
 first died before it found an enemy base; a scout that found the enemy did its job, and replacing it
-would only feed the defender workers.
+would only feed the defender workers. A scout with nowhere reachable left to explore goes back to
+mining, and no further scout is sent. On a map without fog of war everything counts as seen.
 
 Scout discovery, worker harassment and nearby-worker danger checks require a valid hostile team
 and current visibility for the scouting player's controller. Allied units and structures are never

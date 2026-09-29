@@ -12,6 +12,48 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Economy edge cases from a code review; honest match watchdogs
+
+**Date:** 2026-09-29 · **Stage:** pre-release
+
+A review of the gather loop, the bot's worker management and the match watchdogs found these; each
+is fixed and, where the fixture allows, tested on the Complete starter's real content.
+
+- **Workers.** A worker whose drop-off is destroyed (or dying) while it carries a load takes it to
+  the next one (`RTS.Economy.Gather.DropOffLostOnTheWay`). Workers deliver only to their own player's
+  drop-offs, never an ally's, and only to one they can walk to (`RTS.Economy.Gather.OnlyOwnDropOffs`).
+  One whose patch runs out moves on to the nearest patch of the same resource
+  (`RTS.Economy.Gather.MinedOutPatchMovesOn`). One sent to a full refinery waits for a slot instead
+  of being refused (`RTS.Economy.Gather.WaitAtFullRefinery`). Only a player's own refinery can be
+  harvested. A fight that ends by frontage timeout or the no-progress watchdog resumes the mining it
+  interrupted, on the next patch if its own ran out.
+- **Bot.** The worker distributor no longer takes workers off other jobs such as fighting back
+  (`RTS.AI.Economy.DistributorLeavesFightsAlone`); it counts carriers toward the patch they return
+  to, and long-distance mines a resource mined out at every base even while another resource still
+  runs at home. Mined-out bases do not count toward the townhall limit, so a mined-out AI expands.
+  A builder that timed out goes back to mining. A worker rush that turns into an army attack sends
+  the extra drafted workers back (`RTS.AI.WorkerDefense.HalfTheWorkersKeepMining`). A scout with
+  nowhere reachable left to explore goes back to mining; maps without fog count everything as seen.
+  The overrun test counts armed units other than workers.
+- **Watchdogs.** EconomyLiveness gives a freed or rebuilt economy one mining round trip
+  (new `URTSMatchCheckSubsystem::EconomyRecoveryGraceSeconds`, 20 s) before alarming.
+  WorkerSlaughter's home is the bot's defended area (`WorkerSlaughterHomeRadiusCm` 3000 → 2500,
+  finished drop-offs only). The match-restart timeout is measured in real time, not sped-up
+  simulation time.
+- **API.** New on `URTSGathererComponent`: `CanWorkSource`, `HasRoomAt`, `FindNextSource`.
+  `CanGatherAfterReturning` now means `CanWorkSource` and a free slot; the Gather order's target
+  check uses `CanWorkSource`.
+
+Customer impact: a Blueprint or C++ override that relied on depositing at an ally's drop-off or
+harvesting an ally's refinery no longer gets it. Projects that set `WorkerSlaughterHomeRadiusCm`
+keep their value.
+
+Reviewed public-header fingerprint: `6D7DF65317531882EBE49A95C114124346D6388F` (185 paths).
+Reflection: `400ABFAC378B0C84CF54BD5F4E9B6AF223884982` (unchanged).
+Coverage: the tests named above, `RTS.Diagnostics.*`, the full RTS suite (210).
+
+---
+
 ## Workers keep mining while they defend; LTD2 combat strength
 
 **Date:** 2026-09-28 · **Stage:** pre-release

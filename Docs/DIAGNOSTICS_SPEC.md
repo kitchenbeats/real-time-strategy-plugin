@@ -90,7 +90,10 @@ CI (exit codes). This document defines their shared runtime contract.
    This is not balance or survivability evidence.
 2. **Watchdog framework + v1 watchdogs** (poll-based now; will consume the event stream for
    richer rules once it lands):
-   - `EconomyLiveness` — a player with workers but zero income for 60s (the dead-economy class)
+   - `EconomyLiveness` — a player with workers but zero income for 60s (the dead-economy class).
+     While a materially superior hostile force occupies the player's buildings, or it has no
+     drop-off to deliver to, the window cannot expire; when that ends, the economy gets one mining
+     round trip (`EconomyRecoveryGraceSeconds`, 20 s) to move before a still-frozen wallet alarms.
    - `BankRunaway` — at verdict, a bank remains above threshold after a full uninterrupted window
      without active production/construction or an observed resource debit. Activity later in the
      match clears the candidate because it proves the AI can spend. Evaluation occurs at every
@@ -98,7 +101,8 @@ CI (exit codes). This document defines their shared runtime contract.
      rich-idle candidate across the complete run, including recovered candidates.
    - `TeleportDetector` — any pawn displaced farther than MaxSpeed × window (the builder-teleport class)
    - `WorkerSlaughter` — a roster with draft-capable workers suffers repeated worker deaths at
-     home with no defense response. Each death is judged when it happens. The bot responds either
+     home (within `WorkerSlaughterHomeRadiusCm`, 2,500 cm, of a finished drop-off: the area the
+     bot's worker defense covers) with no defense response. Each death is judged when it happens. The bot responds either
      by drafting workers or by declining the draft (it judged the fight at that base unwinnable and
      kept its workers mining); either ends the unanswered run. A death does not extend the run when
      the worker's weapon could not hit its killer (a flyer against a ground-only tool), or when a

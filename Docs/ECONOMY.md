@@ -1,7 +1,7 @@
 # Economy and Gathering
 
 The default economy supports multiple resource types, finite resource sources, worker carrying
-capacity and cooldowns, optional enterable sources, team-owned drop-off buildings, replicated
+capacity and cooldowns, optional enterable sources, player-owned drop-off buildings, replicated
 player wallets, construction/production costs, and Blueprint-assignable change delegates.
 
 ## Blueprint extension points
@@ -58,10 +58,25 @@ worker, controller, source, and resource pool is revalidated after extensible ga
 order callbacks, so a callback that removes an actor cannot leave the remaining distribution pass
 holding stale gameplay objects.
 
-It sends workers to sources within 2,500 cm of one of the player's ready drop-offs. When every base
-is mined out, it long-distance mines instead, as StarCraft players do: the workers go to the
-nearest remaining line of sources that no enemy drop-off stands beside, and carry each load home to
-the nearest drop-off, until the player has a new base.
+It sends workers to sources within 2,500 cm of one of the player's ready drop-offs. When a
+resource is mined out at every base (the minerals, say, while a refinery still runs), it
+long-distance mines that resource instead, as StarCraft players do: the workers go to the nearest
+remaining line of it that no enemy drop-off stands beside, and carry each load home to the nearest
+drop-off, until the player has a new base. It re-tasks idle workers, workers holding a stale order,
+and surplus miners; a worker on another job (fighting back, walking home from a chase, repairing)
+is left on it. A worker carrying a load home counts toward the source it will return to.
+
+Workers handle a match's edge cases as StarCraft workers do:
+
+- A worker delivers only to its own player's drop-offs, never an ally's, and only to one it can
+  walk to; a closer drop-off across a cliff without a ramp is skipped for a reachable one.
+- When the drop-off it is carrying a load to is destroyed, it takes the load to the next one.
+- When the source it is walking to runs out, it moves on to the nearest source of the same resource
+  within its sweep radius of the old one.
+- A worker sent to a full enterable source (a refinery at its gatherer capacity) waits beside it
+  and goes in when a slot frees.
+- Only its own player's refinery can be harvested.
+- A worker pulled into a fight goes back to its mining when the fight ends, however it ends.
 
 Harvest start returns whether source admission and required container entry actually committed.
 Start, stop, extraction, cargo mutation, and deposit reject callback re-entry. A deposit reserves
