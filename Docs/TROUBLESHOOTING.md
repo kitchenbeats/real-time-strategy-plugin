@@ -169,6 +169,14 @@ See [Vendor-Neutral Skeletal Animation](MULTIRIG_ANIM.md) for the full checklist
 
 See [Packaging and Multiplayer](PACKAGING.md).
 
+## An RTS test fails on a Mac with a LogMacTextInputMethodSystem error
+
+The first test that plays a map fails with "Deactivating a context failed when its window couldn't
+be found", even when run on its own. The editor reopened a window with a text box that took the
+keyboard focus at startup, usually a floating **Project Settings** or **Plugins** window left open
+when the editor last closed. Close that window, quit the editor so the layout is saved, and run the
+tests again. The error comes from Unreal's Mac text input, not from the plugin.
+
 ## After updating or disabling the plugin
 
 Do not save assets that depend on the plugin (your Content Set, generated Blueprints, maps) while
