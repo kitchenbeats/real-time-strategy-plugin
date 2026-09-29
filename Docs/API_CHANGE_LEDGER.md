@@ -21,11 +21,12 @@ Fingerprints are recorded as they stand *after* the change.
   quick-select keys, Auto Cast, Shift placement, casters walking into range, following a unit and
   the Hard AI.
 
-- On a Mac without a renderer (`-NullRHI`), the editor module adds an in-memory Engine config layer
-  so `LogMacTextInputMethodSystem` no longer fails tests: Unreal logs an error there whenever
-  keyboard focus leaves a text box the editor reopened (such as a Project Settings search box), and
-  it failed the first play-session test of every run. Nothing is written to disk; other platforms
-  and rendering sessions are unchanged. Test: `RTS.Editor.WindowlessMacTextInputIgnored`.
+- On a Mac without a renderer (`-NullRHI`), a text box that takes the keyboard focus at editor
+  startup (such as the search box of a Project Settings window the layout reopened) never gets a
+  working text-input context, and Unreal logged an error inside the first play-session test when
+  the focus left it, failing that test. The editor module now clears the keyboard focus when a test
+  session starts, before any test runs. Nothing is suppressed. Test:
+  `RTS.Editor.WindowlessMacTestsStartWithoutTextFocus`.
 
 Customer impact: none beyond the entries it collects. A project that pins the plugin folder name
 (`RealTimeStrategy-1.3.0`) renames it.
