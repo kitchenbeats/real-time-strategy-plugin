@@ -45,7 +45,10 @@ CI (exit codes). This document defines their shared runtime contract.
    rates/backlog, strategic-request work, and scoped replication/fog work counters. Add
    `-RTSPerformanceTier=100`, `500`, or `1000` to
    discover the installed content set's real worker and combat catalogs, establish the tier through
-   authoritative gameplay spawns, and replenish battle losses. The 500- and 1,000-unit tiers
+   authoritative gameplay spawns, and replenish battle losses. Buildings below half health are
+   restored too, so a base destroyed mid-measurement cannot end the match and freeze the
+   measurement window; a match that ends there anyway raises a `PerformanceCapture` alarm. The
+   500- and 1,000-unit tiers
    require at least four or eight participant bases. Add
    `-RTSPerformanceBudget=Client100|Client500|Client1000|Server500|Server1000` to enforce the
    corresponding frame/hitch thresholds after at least ten sampled wall minutes; budget runs must

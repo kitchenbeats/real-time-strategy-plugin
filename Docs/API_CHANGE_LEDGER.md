@@ -12,6 +12,28 @@ Fingerprints are recorded as they stand *after* the change.
 
 ---
 
+## Scale runs keep their battlefield standing
+
+**Date:** 2026-10-01 · **Stage:** pre-release
+
+- **Release-gate bug.** In the installed network scale run, the AI's half of the 100-unit workload
+  destroyed the human base 0.6 s before the 5-second measurement window closed. The match ended, the
+  end of a match pauses the world, and the synchronized window (measured in server world time) never
+  closed, so neither process wrote a verdict. During a performance run MatchCheck now restores
+  buildings below half health, as it already replaces dead units, so the match cannot end
+  mid-measurement; if one ends anyway, it raises a `PerformanceCapture` alarm and finishes instead of
+  hanging. New private `URTSMatchCheckSubsystem::TickPerformanceBattlefield`. Test:
+  `RTS.Diagnostics.MatchCheck.PerformanceRunKeepsBasesStanding`; the authority + remote-client pair
+  ran 3 times locally with both verdicts written.
+
+Customer impact: none; diagnostics only.
+
+Reviewed public-header fingerprint: `5F8534CB3B5D77C1777AE98D1F5AB27F659D7ECE` (185 paths).
+Reflection: `400ABFAC378B0C84CF54BD5F4E9B6AF223884982` (unchanged).
+Coverage: `RTS.Diagnostics.*` (20), the full RTS suite (211).
+
+---
+
 ## Economy edge cases from a code review; honest match watchdogs
 
 **Date:** 2026-09-29 · **Stage:** pre-release
